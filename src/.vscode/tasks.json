@@ -1,0 +1,38 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: cl.exe build active file",
+			"command": "cl.exe",
+			"args": [
+				"/I${workspaceFolder}\\..\\dependencies\\include", //options
+				"/Fo${workspaceFolder}\\..\\bin\\",
+				"/Fd${workspaceFolder}\\..\\bin\\",
+				"/Zi",
+				"/EHsc",
+				"/nologo",
+				"/Fe:",
+				"${workspaceFolder}\\..\\bin\\doonui_x64.exe",
+
+				"${workspaceFolder}\\*.cpp", //source files
+
+				"${workspaceFolder}\\..\\dependencies\\lib\\glfw3.lib",
+				"${workspaceFolder}\\..\\dependencies\\lib\\glfw3_mt.lib",
+				"${workspaceFolder}\\..\\dependencies\\lib\\glfw3dll.lib",
+				"opengl32.lib"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$msCompile",
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: cl.exe"
+		}
+	]
+}
