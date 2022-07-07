@@ -3,6 +3,12 @@
 #include <iostream>
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
+#include "DoonUI/render.hpp"
+
+void window_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
 
 int main()
 {
@@ -35,11 +41,19 @@ int main()
 	//set gl viewport:
 	//---------------------------------
 	glViewport(0, 0, 1280, 720);
+	glfwSetWindowSizeCallback(window, window_size_callback);
+
+	DNUI_init();
 
 	//main loop:
 	//---------------------------------
 	while(!glfwWindowShouldClose(window))
 	{
+		glClearColor(0.0, 0.0, 0.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		DNUI_drawrect({1280 / 2, 720 / 2}, {600, 300});
+
 		//finish rendering and swap:
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -47,6 +61,7 @@ int main()
 
 	//clean up and close:
 	//---------------------------------
+	DNUI_close();
 	glfwTerminate();
 	return 0;
 }
