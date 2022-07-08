@@ -4,6 +4,7 @@ layout(location = 0) in vec2 inPos;
 out vec2 texCoord;
 
 uniform mat3 model;
+uniform mat3 projection;
 
 void main()
 {

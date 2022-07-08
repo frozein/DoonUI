@@ -1,6 +1,7 @@
 #include "render.hpp"
 #include <stdio.h>
 #include <malloc.h>
+#include <math.h>
 #include <GLAD/glad.h>
 #include "math/matrix.hpp"
 #include "math/vector.hpp"
@@ -113,16 +114,24 @@ void DNUI_close()
 	glDeleteVertexArrays(1, &vertexArray);
 }
 
-void DNUI_drawrect(DNivec2 center, DNivec2 size)
+void DNUI_drawrect(DNvec2 center, DNvec2 size, float angle)
 {
+	//get window width/height
 	DNivec4 windowParams; //x, y, w, h
 	glGetIntegerv(GL_VIEWPORT, (int*)&windowParams);
 
-	DNvec2 normalizedCenter = {(float)center.x / windowParams.z * 2.0f - 1.0f, (float)center.y / windowParams.w * 2.0f - 1.0f};
-	DNvec2 normalizedSize = {(float)size.x / windowParams.z, (float)size.y / windowParams.w};
+	//generate orthagonal projection:
+	DNmat3 projection = DN_MAT3_IDENTITY;
+	projection.m[0][0] = 2.0f / windowParams.z;
+	projection.m[1][1] = 2.0f / windowParams.w;
+	projection.m[2][0] = -1.0f;
+	projection.m[2][1] = -1.0f;
 
-	DNmat3 model = DN_mat3_translate(DN_MAT3_IDENTITY, normalizedCenter);
-	model = DN_mat3_scale(model, normalizedSize);
+	DNmat3 model = DN_mat3_translate(DN_MAT3_IDENTITY, {center.x, center.y});
+	model = DN_mat3_rotate(model, angle);
+	model = DN_mat3_scale(model, {size.x * 0.5f, size.y * 0.5f});
+
+	model = DN_mat3_mult(projection, model);
 
 	glUseProgram(shaderProgram);
 	glUniformMatrix3fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, (GLfloat*)&model);

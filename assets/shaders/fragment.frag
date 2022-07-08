@@ -13,23 +13,25 @@ in vec2 texCoord; 		 //the texture coordinate
 void main()
 {
 	vec2 pixelPos = texCoord * size;
-	vec2 testPos;
-	bool test = true;
+	vec2 cornerPos;
+	bool testCorner = true;
+	
 	if(pixelPos.x < cornerRad)
-		testPos.x = cornerRad;
+		cornerPos.x = cornerRad;
 	else if(pixelPos.x > size.x - cornerRad)
-		testPos.x = size.x - cornerRad;
+		cornerPos.x = size.x - cornerRad;
 	else
-		test = false;
+		testCorner = false;
 
 	if(pixelPos.y < cornerRad)
-		testPos.y = cornerRad;
+		cornerPos.y = cornerRad;
 	else if(pixelPos.y > size.y - cornerRad)
-		testPos.y = size.y - cornerRad;
+		cornerPos.y = size.y - cornerRad;
 	else
-		test = false;
+		testCorner = false;
 
-	if(test && distance(testPos, pixelPos) > cornerRad)
+	vec2 toCenter = cornerPos - pixelPos;
+	if(testCorner && dot(toCenter, toCenter) > cornerRad * cornerRad)
 		discard;
 
 	vec4 finalColor = color;

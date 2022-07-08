@@ -19,6 +19,8 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	glfwWindowHint(GLFW_SAMPLES, 4);
+
 	//create and init window:
 	//---------------------------------
 	GLFWwindow* window = glfwCreateWindow(1280, 720, "DoonUI", NULL, NULL);
@@ -43,6 +45,11 @@ int main()
 	glViewport(0, 0, 1280, 720);
 	glfwSetWindowSizeCallback(window, window_size_callback);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+
+	glEnable(GL_MULTISAMPLE);
+
 	DNUI_init();
 
 	//main loop:
@@ -52,7 +59,7 @@ int main()
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		DNUI_drawrect({1280 / 2, 720 / 2}, {600, 300});
+		DNUI_drawrect({1280 / 2, 720 / 2}, {720, 300}, glfwGetTime() * 30.0f);
 
 		//finish rendering and swap:
 		glfwSwapBuffers(window);
