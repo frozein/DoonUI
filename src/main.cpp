@@ -8,6 +8,7 @@
 void window_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+	DNUI_set_window_size(width, height);
 }
 
 int main()
@@ -50,7 +51,7 @@ int main()
 
 	glEnable(GL_MULTISAMPLE);
 
-	DNUI_init();
+	DNUI_init(1280, 720);
 
 	//main loop:
 	//---------------------------------
@@ -59,7 +60,7 @@ int main()
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		DNUI_drawrect({1280 / 2, 720 / 2}, {720, 300}, glfwGetTime() * 30.0f);
+		DNUI_drawrect({1280 / 2, 720 / 2}, {720, 300}, 0.0f, {0.0, 1.0, 0.0, 1.0}, sinf(glfwGetTime() * 3.0f) * 60 + 70);
 
 		//finish rendering and swap:
 		glfwSwapBuffers(window);

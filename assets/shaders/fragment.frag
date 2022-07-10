@@ -12,6 +12,14 @@ in vec2 texCoord; 		 //the texture coordinate
 
 void main()
 {
+	//set color:
+	//---------------------------------
+	vec4 finalColor = color;
+	if(useTex)
+		finalColor *= texture(tex, texCoord);
+
+	//see if pixel is in corner:
+	//---------------------------------
 	vec2 pixelPos = texCoord * size;
 	vec2 cornerPos;
 	bool testCorner = true;
@@ -30,13 +38,22 @@ void main()
 	else
 		testCorner = false;
 
-	vec2 toCenter = cornerPos - pixelPos;
-	if(testCorner && dot(toCenter, toCenter) > cornerRad * cornerRad)
-		discard;
+	//test if pixel is within radius:
+	//---------------------------------
+	const vec2 samplePoints[] = {vec2(-0.375, -0.375), vec2(-0.375, 0.375), vec2(0.375, -0.375), vec2(0.375, 0.375)}; //multisample to allow for smoother corners
+	float mult = 1.0;
 
-	vec4 finalColor = color;
-	if(useTex)
-		finalColor *= texture(tex, texCoord);
+	for(int i = 0; i < 4; i++)
+	{
+		vec2 newPos = pixelPos + samplePoints[i];
+		vec2 toCenter = cornerPos - newPos;
+		if(testCorner && dot(toCenter, toCenter) > cornerRad * cornerRad)
+			mult -= 0.25;
+	}
 
+	finalColor.a *= mult;
+
+	//return:
+	//---------------------------------
 	FragColor = finalColor;
 }

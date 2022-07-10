@@ -13,9 +13,11 @@ static bool _DNUI_load_into_buffer(const char* path, char** buffer);
 static GLuint shaderProgram;
 static GLuint vertexArray;
 
+static DNmat3 projectionMat;
+
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-bool DNUI_init()
+bool DNUI_init(unsigned int windowW, unsigned int windowH)
 {
 	//load shader:
 	//---------------------------------
@@ -82,7 +84,6 @@ bool DNUI_init()
 
 	//create vertex buffer:
 	//---------------------------------
-
 	float quadVertices[] = {
      	 1.0f,  1.0f,
      	 1.0f, -1.0f,
@@ -105,6 +106,10 @@ bool DNUI_init()
 
 	vertexArray = VAO;
 
+	//set projection matrix:
+	//---------------------------------
+	DNUI_set_window_size(windowW, windowH);
+
 	return true;
 }
 
@@ -114,31 +119,33 @@ void DNUI_close()
 	glDeleteVertexArrays(1, &vertexArray);
 }
 
-void DNUI_drawrect(DNvec2 center, DNvec2 size, float angle)
+void DNUI_set_window_size(unsigned int w, unsigned int h)
 {
-	//get window width/height
-	DNivec4 windowParams; //x, y, w, h
-	glGetIntegerv(GL_VIEWPORT, (int*)&windowParams);
+	//generate new projection matrix:
+	//---------------------------------
+	projectionMat = DN_MAT3_IDENTITY;
+	projectionMat.m[0][0] = 2.0f / w;
+	projectionMat.m[1][1] = 2.0f / h;
+	projectionMat.m[2][0] = -1.0f;
+	projectionMat.m[2][1] = -1.0f;
+}
 
-	//generate orthagonal projection:
-	DNmat3 projection = DN_MAT3_IDENTITY;
-	projection.m[0][0] = 2.0f / windowParams.z;
-	projection.m[1][1] = 2.0f / windowParams.w;
-	projection.m[2][0] = -1.0f;
-	projection.m[2][1] = -1.0f;
-
+void DNUI_drawrect(DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad)
+{
 	DNmat3 model = DN_mat3_translate(DN_MAT3_IDENTITY, {center.x, center.y});
 	model = DN_mat3_rotate(model, angle);
 	model = DN_mat3_scale(model, {size.x * 0.5f, size.y * 0.5f});
 
-	model = DN_mat3_mult(projection, model);
+	model = DN_mat3_mult(projectionMat, model);
 
 	glUseProgram(shaderProgram);
+
 	glUniformMatrix3fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, (GLfloat*)&model);
-	glUniform4f(glGetUniformLocation(shaderProgram, "color"), 1.0, 0.0, 0.0, 1.0);
-	glUniform2f(glGetUniformLocation(shaderProgram, "size"), size.x, size.y);
-	glUniform1f(glGetUniformLocation(shaderProgram, "cornerRad"), 20.0f);
+	glUniform4fv(glGetUniformLocation(shaderProgram, "color"), 1, (GLfloat*)&color);
+	glUniform2fv(glGetUniformLocation(shaderProgram, "size"), 1, (GLfloat*)&size);
+	glUniform1f(glGetUniformLocation(shaderProgram, "cornerRad"), cornerRad);
 	glUniform1ui(glGetUniformLocation(shaderProgram, "useTex"), false);
+
 	glBindVertexArray(vertexArray);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
