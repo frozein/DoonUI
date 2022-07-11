@@ -67,7 +67,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//DNUI_drawrect({1280 / 2, 720 / 2}, {720, 300}, 0.0f, {0.0, 1.0, 0.0, 1.0}, sinf(glfwGetTime() * 3.0f) * 60 + 70);
-		DNUI_drawstring("t", 0, {100, 100}, {1.0, 1.0});
+		DNUI_drawstring("Hello world!", 0, {100, 100}, {sinf(glfwGetTime() * 3.0f) + 1.0f, sinf(glfwGetTime() * 3.0f) + 1.0f});
 
 		//finish rendering and swap:
 		glfwSwapBuffers(window);

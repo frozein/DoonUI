@@ -158,6 +158,8 @@ int DNUI_load_font(const char* path, int size)
 
 	//compute texture dimensions:
 	//---------------------------------
+	const int texturePadding = 1;
+
 	int w = 0;
 	int h = 0;
 	for(int i = 32; i < 128; i++)
@@ -168,7 +170,7 @@ int DNUI_load_font(const char* path, int size)
 			continue;
 		}
 
-		w += font->glyph->bitmap.width;
+		w += font->glyph->bitmap.width + texturePadding;
 		if(font->glyph->bitmap.rows > h)
 			h = font->glyph->bitmap.rows;
 	}
@@ -195,7 +197,7 @@ int DNUI_load_font(const char* path, int size)
 		}
 
 		//set data:
-		fonts[newIndex].glyphInfo[i].advance = font->glyph->advance.x;
+		fonts[newIndex].glyphInfo[i].advance = font->glyph->advance.x / 64;
 		fonts[newIndex].glyphInfo[i].bmpW = font->glyph->bitmap.width;
 		fonts[newIndex].glyphInfo[i].bmpH = font->glyph->bitmap.rows;
 		fonts[newIndex].glyphInfo[i].bmpL = font->glyph->bitmap_left;
@@ -206,7 +208,7 @@ int DNUI_load_font(const char* path, int size)
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, font->glyph->bitmap.width, font->glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, font->glyph->bitmap.buffer);
 
 		//advance:
-		x += font->glyph->bitmap.width;
+		x += font->glyph->bitmap.width + texturePadding;
 	}
 
 	fonts[newIndex].textureAtlas = tex;
@@ -268,37 +270,39 @@ void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 sca
 		GLfloat texY;
 	}* vertices;
 
-	int numVertices = 6 * strlen(text);
+	int len = strlen(text);
+	int numVertices = 6 * len;
 	vertices = malloc(4 * sizeof(GLfloat) * numVertices);
 
 	//generate vertex data:
 	//---------------------------------
 	int i = 0;
-	char* c = (char*)text;
-	while(i < numVertices)
+	for(char* c = (char*)text; *c != '\0'; c++)
 	{
 		float offset = fonts[font].glyphInfo[*c].offset;
-		float bmpW = fonts[font].glyphInfo[*c].bmpW;
-		float bmpH = fonts[font].glyphInfo[*c].bmpH;
+		float bmpW = fonts[font].glyphInfo[*c].bmpW / fonts[font].atlasSize.x;
+		float bmpH = fonts[font].glyphInfo[*c].bmpH / fonts[font].atlasSize.y;
 
 		float x =  pos.x + fonts[font].glyphInfo[*c].bmpL * scale.x;
 		float y = -pos.y - fonts[font].glyphInfo[*c].bmpT * scale.y;
 		float w = fonts[font].glyphInfo[*c].bmpW * scale.x;
 		float h = fonts[font].glyphInfo[*c].bmpH * scale.y;
 
-		pos.x += fonts[font].glyphInfo[*c].advance;
+		pos.x += fonts[font].glyphInfo[*c].advance * scale.x;
 
+		//don't render spaces
 		if(w <= 0.0 || h <= 0.0)
+		{
+			numVertices -= 6;
 			continue;
+		}
 
-		vertices[i++] = (struct Vertex){x	 , -y	 , offset								  , 0.0							  };
-		vertices[i++] = (struct Vertex){x + w, -y	 , offset + bmpW / fonts[font].atlasSize.x, 0.0							  };
-		vertices[i++] = (struct Vertex){x	 , -y - h, offset								  , bmpH / fonts[font].atlasSize.y};
-		vertices[i++] = (struct Vertex){x + w, -y	 , offset + bmpW / fonts[font].atlasSize.x, 0.0							  };
-		vertices[i++] = (struct Vertex){x	 , -y - h, offset								  , bmpH / fonts[font].atlasSize.y};
-		vertices[i++] = (struct Vertex){x + w, -y - h, offset + bmpW / fonts[font].atlasSize.x, bmpH / fonts[font].atlasSize.y};
-
-		c++;
+		vertices[i++] = (struct Vertex){x	 , -y	 , offset		, 0.0 };
+		vertices[i++] = (struct Vertex){x + w, -y	 , offset + bmpW, 0.0 };
+		vertices[i++] = (struct Vertex){x	 , -y - h, offset		, bmpH};
+		vertices[i++] = (struct Vertex){x + w, -y	 , offset + bmpW, 0.0 };
+		vertices[i++] = (struct Vertex){x	 , -y - h, offset		, bmpH};
+		vertices[i++] = (struct Vertex){x + w, -y - h, offset + bmpW, bmpH};
 	}
 
 	//send to GPU:
@@ -307,9 +311,9 @@ void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 sca
 	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(GLfloat) * numVertices, vertices, GL_DYNAMIC_DRAW);
 
 	glUseProgram(textProgram);
-	glUniform4f(glGetUniformLocation(rectProgram, "color"), 1.0, 1.0, 1.0, 0.0);
-	glUniformMatrix3fv(glGetUniformLocation(rectProgram, "projection"), 1, GL_FALSE, (GLfloat*)&projectionMat);
-	glUniform1i(glGetUniformLocation(rectProgram, "textureAtlas"), 0);
+	glUniform4f(glGetUniformLocation(textProgram, "color"), 1.0, 1.0, 1.0, 1.0);
+	glUniformMatrix3fv(glGetUniformLocation(textProgram, "projection"), 1, GL_FALSE, (GLfloat*)&projectionMat);
+	glUniform1i(glGetUniformLocation(textProgram, "textureAtlas"), 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, fonts[font].textureAtlas);
 
