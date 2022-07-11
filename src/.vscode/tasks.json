@@ -7,6 +7,7 @@
 			"command": "cl.exe",
 			"args": [
 				"/I${workspaceFolder}\\..\\dependencies\\include", //options
+				"/I${workspaceFolder}\\..\\dependencies\\include\\FreeType", //needed bc freetype doesnt work if not in some root folder or something
 				"/Fo${workspaceFolder}\\..\\bin\\",
 				"/Fd${workspaceFolder}\\..\\bin\\",
 				"/Zi",
@@ -16,16 +17,17 @@
 				"${workspaceFolder}\\..\\bin\\doonui_x64.exe",
 
 				"/Tc${workspaceFolder}\\glad.c",
-				"/Tp${workspaceFolder}\\DoonUI\\math\\vector.cpp",
-				"/Tp${workspaceFolder}\\DoonUI\\math\\matrix.cpp",
-				"/Tp${workspaceFolder}\\DoonUI\\math\\quaternion.cpp",
-				"/Tp${workspaceFolder}\\DoonUI\\render.cpp",
+				"/Tc${workspaceFolder}\\DoonUI\\math\\vector.c",
+				"/Tc${workspaceFolder}\\DoonUI\\math\\matrix.c",
+				"/Tc${workspaceFolder}\\DoonUI\\math\\quaternion.c",
+				"/Tc${workspaceFolder}\\DoonUI\\render.c",
 
 				"${workspaceFolder}\\*.cpp", //source files
 
 				"${workspaceFolder}\\..\\dependencies\\lib\\glfw3.lib",
 				"${workspaceFolder}\\..\\dependencies\\lib\\glfw3_mt.lib",
 				"${workspaceFolder}\\..\\dependencies\\lib\\glfw3dll.lib",
+				"${workspaceFolder}\\..\\dependencies\\lib\\freetype.lib",
 				"opengl32.lib"
 			],
 			"options": {

@@ -4,7 +4,8 @@
             "name": "Win64",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/../dependencies/include/"
+                "${workspaceFolder}/../dependencies/include/",
+                "${workspaceFolder}/../dependencies/include/FreeType" //needed bc freetype doesnt work if not in some root folder or something
             ],
             "defines": [
                 "_DEBUG",

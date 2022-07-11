@@ -3,7 +3,11 @@
 #include <iostream>
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
-#include "DoonUI/render.hpp"
+
+extern "C" //idk why but this works
+{
+	#include "DoonUI/render.h"
+}
 
 void window_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -52,6 +56,8 @@ int main()
 	glEnable(GL_MULTISAMPLE);
 
 	DNUI_init(1280, 720);
+	DNUI_load_font("arial.ttf", 72);
+	//DNUI_drawstring("t", 0, {0.0, 0.0}, {1.0, 1.0});
 
 	//main loop:
 	//---------------------------------
@@ -60,7 +66,8 @@ int main()
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		DNUI_drawrect({1280 / 2, 720 / 2}, {720, 300}, 0.0f, {0.0, 1.0, 0.0, 1.0}, sinf(glfwGetTime() * 3.0f) * 60 + 70);
+		//DNUI_drawrect({1280 / 2, 720 / 2}, {720, 300}, 0.0f, {0.0, 1.0, 0.0, 1.0}, sinf(glfwGetTime() * 3.0f) * 60 + 70);
+		DNUI_drawstring("t", 0, {100, 100}, {1.0, 1.0});
 
 		//finish rendering and swap:
 		glfwSwapBuffers(window);
