@@ -56,8 +56,7 @@ int main()
 	glEnable(GL_MULTISAMPLE);
 
 	DNUI_init(1280, 720);
-	DNUI_load_font("arial.ttf", 72);
-	//DNUI_drawstring("t", 0, {0.0, 0.0}, {1.0, 1.0});
+	int arialFont = DNUI_load_font("arial.ttf", 72);
 
 	//main loop:
 	//---------------------------------
@@ -66,8 +65,10 @@ int main()
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//DNUI_drawrect({1280 / 2, 720 / 2}, {720, 300}, 0.0f, {0.0, 1.0, 0.0, 1.0}, sinf(glfwGetTime() * 3.0f) * 60 + 70);
-		DNUI_drawstring("Hello world!", 0, {100, 100}, {sinf(glfwGetTime() * 3.0f) + 1.0f, sinf(glfwGetTime() * 3.0f) + 1.0f});
+		DNUI_drawrect({1280 / 2, 720 / 2}, {720, 300}, 0.0f, {0.0, 1.0, 0.0, 1.0}, sinf(glfwGetTime() * 3.0f) * 60 + 70);
+		DNUI_drawstring("Hello world!", arialFont, {100, 550}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.7f, 0.5f, {0.0f, 0.0f, 1.0f, 1.0f}, 0.5f, 0.05f);
+		DNUI_drawstring("Hello world!", arialFont, {100, 350}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.55f, 0.05f, {1.0f, 0.0f, 0.0f, 1.0f}, 0.45f, 0.05f);
+		DNUI_drawstring("Hello world!", arialFont, {100, 150}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 0.05f, {0.0f, 1.0f, 0.0f, 1.0f}, 1.0f, 0.5f);
 
 		//finish rendering and swap:
 		glfwSwapBuffers(window);
@@ -76,6 +77,7 @@ int main()
 
 	//clean up and close:
 	//---------------------------------
+	DNUI_free_font(arialFont);
 	DNUI_close();
 	glfwTerminate();
 	return 0;

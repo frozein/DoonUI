@@ -40,18 +40,13 @@ void main()
 
 	//test if pixel is within radius:
 	//---------------------------------
-	const vec2 samplePoints[] = {vec2(-0.375, -0.375), vec2(-0.375, 0.375), vec2(0.375, -0.375), vec2(0.375, 0.375)}; //multisample to allow for smoother corners
-	float mult = 1.0;
-
-	for(int i = 0; i < 4; i++)
+	if(testCorner)
 	{
-		vec2 newPos = pixelPos + samplePoints[i];
-		vec2 toCenter = cornerPos - newPos;
-		if(testCorner && dot(toCenter, toCenter) > cornerRad * cornerRad)
-			mult -= 0.25;
-	}
+		float dist = distance(pixelPos, cornerPos) - cornerRad;
+		float mult = smoothstep(1.0, -1.0, dist);
 
-	finalColor.a *= mult;
+		finalColor.a *= mult;
+	}
 
 	//return:
 	//---------------------------------

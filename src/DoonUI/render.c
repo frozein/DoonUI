@@ -164,11 +164,13 @@ int DNUI_load_font(const char* path, int size)
 	int h = 0;
 	for(int i = 32; i < 128; i++)
 	{
-		if(FT_Load_Char(font, i, FT_LOAD_BITMAP_METRICS_ONLY))
+		if(FT_Load_Char(font, i, FT_LOAD_RENDER))
 		{
 			printf("DNUI ERROR - FAILED TO LOAD CHARACTER \"%c\"", i);
 			continue;
 		}
+
+		FT_Render_Glyph(font->glyph, FT_RENDER_MODE_SDF); //TODO: find a way to not render the text twice
 
 		w += font->glyph->bitmap.width + texturePadding;
 		if(font->glyph->bitmap.rows > h)
@@ -196,6 +198,8 @@ int DNUI_load_font(const char* path, int size)
 			continue;
 		}
 
+		FT_Render_Glyph(font->glyph, FT_RENDER_MODE_SDF);
+
 		//set data:
 		fonts[newIndex].glyphInfo[i].advance = font->glyph->advance.x / 64;
 		fonts[newIndex].glyphInfo[i].bmpW = font->glyph->bitmap.width;
@@ -216,6 +220,12 @@ int DNUI_load_font(const char* path, int size)
 	fonts[newIndex].atlasSize.y = h;
 
 	return newIndex;
+}
+
+void DNUI_free_font(int font)
+{
+	glDeleteTextures(1, &fonts[font].textureAtlas);
+	fonts[font].textureAtlas = -1;
 }
 
 void DNUI_close()
@@ -258,7 +268,7 @@ void DNUI_drawrect(DNvec2 center, DNvec2 size, float angle, DNvec4 color, float 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 scale)
+void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, float scale, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
 {
 	//create vertex array:
 	//---------------------------------
@@ -283,12 +293,12 @@ void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 sca
 		float bmpW = fonts[font].glyphInfo[*c].bmpW / fonts[font].atlasSize.x;
 		float bmpH = fonts[font].glyphInfo[*c].bmpH / fonts[font].atlasSize.y;
 
-		float x =  pos.x + fonts[font].glyphInfo[*c].bmpL * scale.x;
-		float y = -pos.y - fonts[font].glyphInfo[*c].bmpT * scale.y;
-		float w = fonts[font].glyphInfo[*c].bmpW * scale.x;
-		float h = fonts[font].glyphInfo[*c].bmpH * scale.y;
+		float x =  pos.x + fonts[font].glyphInfo[*c].bmpL * scale;
+		float y = -pos.y - fonts[font].glyphInfo[*c].bmpT * scale;
+		float w = fonts[font].glyphInfo[*c].bmpW * scale;
+		float h = fonts[font].glyphInfo[*c].bmpH * scale;
 
-		pos.x += fonts[font].glyphInfo[*c].advance * scale.x;
+		pos.x += fonts[font].glyphInfo[*c].advance * scale;
 
 		//don't render spaces
 		if(w <= 0.0 || h <= 0.0)
@@ -311,9 +321,15 @@ void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 sca
 	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(GLfloat) * numVertices, vertices, GL_DYNAMIC_DRAW);
 
 	glUseProgram(textProgram);
-	glUniform4f(glGetUniformLocation(textProgram, "color"), 1.0, 1.0, 1.0, 1.0);
+	glUniform4fv(glGetUniformLocation(textProgram, "color"), 1, (GLfloat*)&color);
+	glUniform4fv(glGetUniformLocation(textProgram, "outlineColor"), 1, (GLfloat*)&outlineColor);
 	glUniformMatrix3fv(glGetUniformLocation(textProgram, "projection"), 1, GL_FALSE, (GLfloat*)&projectionMat);
 	glUniform1i(glGetUniformLocation(textProgram, "textureAtlas"), 0);
+	glUniform1f(glGetUniformLocation(textProgram, "scale"), scale);
+	glUniform1f(glGetUniformLocation(textProgram, "thickness"), 1.0 - thickness);
+	glUniform1f(glGetUniformLocation(textProgram, "softness"), softness);
+	glUniform1f(glGetUniformLocation(textProgram, "outlineThickness"), 1.0 - outlineThickness);
+	glUniform1f(glGetUniformLocation(textProgram, "outlineSoftness"), outlineSoftness);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, fonts[font].textureAtlas);
 
