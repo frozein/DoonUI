@@ -147,8 +147,6 @@ void DNUI_set_window_size(unsigned int w, unsigned int h)
 	projectionMat = DN_MAT3_IDENTITY;
 	projectionMat.m[0][0] = 2.0f / w;
 	projectionMat.m[1][1] = 2.0f / h;
-	projectionMat.m[2][0] = -1.0f;
-	projectionMat.m[2][1] = -1.0f;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -405,7 +403,7 @@ void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-void DNUI_drawrect(int textureHandle, DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad)
+void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad)
 {
 	DNmat3 model = DN_mat3_translate(DN_MAT3_IDENTITY, (DNvec2){center.x, center.y});
 	model = DN_mat3_rotate(model, angle);
