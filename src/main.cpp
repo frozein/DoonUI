@@ -3,16 +3,20 @@
 #include <iostream>
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
+#include "DoonUI/element.hpp"
 
 extern "C" //idk why but this works
 {
 	#include "DoonUI/render.h"
 }
 
+DNivec2 windowSize = {1280, 720};
+
 void window_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 	DNUI_set_window_size(width, height);
+	windowSize = {width, height};
 }
 
 int main()
@@ -28,7 +32,7 @@ int main()
 
 	//create and init window:
 	//---------------------------------
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "DoonUI", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(windowSize.x, windowSize.y, "DoonUI", NULL, NULL);
 	if(window == NULL)
 	{
 		printf("Failed to create GLFW window\n");
@@ -47,7 +51,7 @@ int main()
 
 	//set gl viewport:
 	//---------------------------------
-	glViewport(0, 0, 1280, 720);
+	glViewport(0, 0, windowSize.x, windowSize.y);
 	glfwSetWindowSizeCallback(window, window_size_callback);
 
 	glEnable(GL_BLEND);
@@ -55,8 +59,13 @@ int main()
 
 	glEnable(GL_MULTISAMPLE);
 
-	DNUI_init(1280, 720);
+	DNUI_init(windowSize.x, windowSize.y);
 	int arialFont = DNUI_load_font("arial.ttf", 72);
+
+	DNUIbox testBox = DNUIbox(DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MAX), DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.5f), DNUIdimension(DNUI_DIMENSION_ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, -1);
+	
+	DNUIbox* testBox2 = new DNUIbox(DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MIN), DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.5f), DNUIdimension(DNUI_DIMENSION_ASPECT, 1.0f), {0.0f, 1.0f, 0.0f, 1.0f}, 20.0f, -1);
+	testBox.children.push_back((DNUIelement*)testBox2);
 
 	//main loop:
 	//---------------------------------
@@ -65,9 +74,10 @@ int main()
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		float w = sinf(glfwGetTime() * 0.5) * 640 + 640;
-		DNUI_drawrect(-1, {0, 720 / 2}, {w * 2, 600}, 0.0f, {1.0, 1.0, 0.0, 1.0}, 30);
-		DNUI_draw_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean et arcu metus. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam vitae nulla vitae neque lacinia sollicitudin ac ut ipsum. Phasellus leo quam, lobortis ac tincidunt a, molestie non eros. Nulla ultrices fermentum justo, a porta nisl. Vivamus bibendum tempus augue, non aliquam quam dapibus in.", arialFont, {0, 620}, 0.5f, w, {1.0f, 1.0f, 1.0f, 1.0f}, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
+		testBox.update(1.0f, {0.0f, 0.0f}, {(float)windowSize.x, (float)windowSize.y});
+		testBox.render();
+		//DNUI_draw_rect(-1, {0, 720 / 2}, {w * 2, 600}, 0.0f, {1.0, 1.0, 0.0, 1.0}, 30);
+		//DNUI_draw_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean et arcu metus. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam vitae nulla vitae neque lacinia sollicitudin ac ut ipsum. Phasellus leo quam, lobortis ac tincidunt a, molestie non eros. Nulla ultrices fermentum justo, a porta nisl. Vivamus bibendum tempus augue, non aliquam quam dapibus in.", arialFont, {0, 620}, 0.5f, w, {1.0f, 1.0f, 1.0f, 1.0f}, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
 		//DNUI_draw_string("Hello world!", arialFont, {100, 350}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.55f, 0.05f, {1.0f, 0.0f, 0.0f, 1.0f}, 0.45f, 0.05f);
 		//DNUI_draw_string("Hello world!", arialFont, {100, 150}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 0.05f, {0.0f, 1.0f, 0.0f, 1.0f}, 0.45f, 0.5f);
 
