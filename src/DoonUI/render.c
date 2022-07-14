@@ -274,7 +274,8 @@ DNvec2 DNUI_string_render_size(const char* text, int font)
 	return (DNvec2){w, fonts[font].atlasSize.y};
 }
 
-void DNUI_drawstring(const char* text, int font, DNvec2 pos, float scale, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
+//draws a single line of text
+void _DNUI_draw_string_line(const char* text, int font, DNvec2 pos, float scale, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
 {
 	//create vertex array:
 	//---------------------------------
@@ -340,6 +341,66 @@ void DNUI_drawstring(const char* text, int font, DNvec2 pos, float scale, DNvec4
 	glDrawArrays(GL_TRIANGLES, 0, i);
 
 	free(vertices);
+}
+
+void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float maxW, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
+{
+	if(maxW <= 0.0)
+	{
+		_DNUI_draw_string_line(text, font, pos, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+		return;
+	}
+
+	int len = strlen(text);
+	int numLines = 0;
+	int startPos = 0;
+	int lastSpace = -1;
+	float curWidth = 0.0;
+
+	int i;
+	for(i = 0; i < len; i++)
+	{
+		char test = text[i];
+
+		if(text[i] == ' ')
+		{
+			lastSpace = i;
+			curWidth += fonts[font].glyphInfo[text[i]].advance * scale;
+		}
+		else if(curWidth + (fonts[font].glyphInfo[text[i]].bmpL + fonts[font].glyphInfo[text[i]].bmpW) * scale > maxW)
+		{
+			char* line;
+
+			int endPos = lastSpace <= startPos ? i - 1 : lastSpace + 1;
+			line = malloc(endPos - startPos + 1);
+			memcpy(line, &text[startPos], endPos - startPos);
+			line[endPos - startPos] = '\0';
+
+			_DNUI_draw_string_line(line, font, (DNvec2){pos.x, pos.y - fonts[font].atlasSize.y * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+
+			free(line);
+
+			numLines++;
+			startPos = endPos;
+			i = startPos;
+			curWidth = 0.0;
+		}
+		else
+			curWidth += fonts[font].glyphInfo[text[i]].advance * scale;
+	}
+
+	if(i > startPos)
+	{
+		char* line;
+
+		line = malloc(i - startPos + 1);
+		memcpy(line, &text[startPos], i - startPos);
+		line[i - startPos] = '\0';
+
+		_DNUI_draw_string_line(line, font, (DNvec2){pos.x, pos.y - fonts[font].atlasSize.y * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+
+		free(line);
+	}
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
