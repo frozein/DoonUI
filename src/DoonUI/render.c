@@ -371,7 +371,7 @@ void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float
 		{
 			char* line;
 
-			int endPos = lastSpace <= startPos ? i - 1 : lastSpace + 1;
+			int endPos = lastSpace <= startPos ? i : lastSpace + 1;
 			line = malloc(endPos - startPos + 1);
 			memcpy(line, &text[startPos], endPos - startPos);
 			line[endPos - startPos] = '\0';
