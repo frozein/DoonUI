@@ -37,7 +37,7 @@ typedef struct DNUIfont
 		float bmpH;
 		float bmpL;
 		float bmpT;
-		float offset;
+		float texOffset;
 	} glyphInfo[128];
 } DNUIfont;
 
@@ -122,6 +122,7 @@ bool DNUI_init(unsigned int windowW, unsigned int windowH)
 	return true;
 }
 
+//code adapted from this tutorial: https://en.m.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_02
 int DNUI_load_font(const char* path, int size)
 {	
 	//find new font index:
@@ -202,7 +203,7 @@ int DNUI_load_font(const char* path, int size)
 		fonts[newIndex].glyphInfo[i].bmpH = font->glyph->bitmap.rows;
 		fonts[newIndex].glyphInfo[i].bmpL = font->glyph->bitmap_left;
 		fonts[newIndex].glyphInfo[i].bmpT = font->glyph->bitmap_top;
-		fonts[newIndex].glyphInfo[i].offset = (float)x / w;
+		fonts[newIndex].glyphInfo[i].texOffset = (float)x / w;
 
 		//set texture:
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, font->glyph->bitmap.width, font->glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, font->glyph->bitmap.buffer);
@@ -258,6 +259,7 @@ void DNUI_drawrect(DNvec2 center, DNvec2 size, float angle, DNvec4 color, float 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+//code adapted from this tutorial: https://en.m.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_02
 void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 scale)
 {
 	//create vertex array:
@@ -279,7 +281,7 @@ void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 sca
 	int i = 0;
 	for(char* c = (char*)text; *c != '\0'; c++)
 	{
-		float offset = fonts[font].glyphInfo[*c].offset;
+		float texOffset = fonts[font].glyphInfo[*c].texOffset;
 		float bmpW = fonts[font].glyphInfo[*c].bmpW / fonts[font].atlasSize.x;
 		float bmpH = fonts[font].glyphInfo[*c].bmpH / fonts[font].atlasSize.y;
 
@@ -297,12 +299,12 @@ void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 sca
 			continue;
 		}
 
-		vertices[i++] = (struct Vertex){x	 , -y	 , offset		, 0.0 };
-		vertices[i++] = (struct Vertex){x + w, -y	 , offset + bmpW, 0.0 };
-		vertices[i++] = (struct Vertex){x	 , -y - h, offset		, bmpH};
-		vertices[i++] = (struct Vertex){x + w, -y	 , offset + bmpW, 0.0 };
-		vertices[i++] = (struct Vertex){x	 , -y - h, offset		, bmpH};
-		vertices[i++] = (struct Vertex){x + w, -y - h, offset + bmpW, bmpH};
+		vertices[i++] = (struct Vertex){x	 , -y	 , texOffset		, 0.0 };
+		vertices[i++] = (struct Vertex){x + w, -y	 , texOffset + bmpW, 0.0 };
+		vertices[i++] = (struct Vertex){x	 , -y - h, texOffset		, bmpH};
+		vertices[i++] = (struct Vertex){x + w, -y	 , texOffset + bmpW, 0.0 };
+		vertices[i++] = (struct Vertex){x	 , -y - h, texOffset		, bmpH};
+		vertices[i++] = (struct Vertex){x + w, -y - h, texOffset + bmpW, bmpH};
 	}
 
 	//send to GPU:

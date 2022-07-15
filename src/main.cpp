@@ -66,8 +66,10 @@ int main()
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//DNUI_drawrect({1280 / 2, 720 / 2}, {720, 300}, 0.0f, {0.0, 1.0, 0.0, 1.0}, sinf(glfwGetTime() * 3.0f) * 60 + 70);
-		DNUI_drawstring("Hello world!", 0, {100, 100}, {sinf(glfwGetTime() * 3.0f) + 1.0f, sinf(glfwGetTime() * 3.0f) + 1.0f});
+		//DNUI_drawrect({0, 720 / 2}, {987, 634}, 0.0f, {0.0, 1.0, 0.0, 1.0}, sinf(glfwGetTime() * 3.0f) * 60 + 70);
+		DNUI_drawstring("The quick brown fox jumps over the lazy dog", 0, {0, 350}, {1.0, 1.0});
+		DNUI_drawstring("1234567890", 0, {0, 425}, {1.0, 1.0});
+		DNUI_drawstring("!@#$%^&*()_+-=?/.,[]{}:\"", 0, {0, 500}, {1.0, 1.0});
 
 		//finish rendering and swap:
 		glfwSwapBuffers(window);

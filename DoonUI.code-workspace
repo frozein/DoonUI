@@ -24,7 +24,11 @@
 			"xmemory": "c",
 			"xtr1common": "c",
 			"cmath": "c",
-			"glfw3.h": "c"
+			"glfw3.h": "c",
+			"iosfwd": "c",
+			"iterator": "c",
+			"streambuf": "c",
+			"xlocale": "c"
 		}
 	}
 }
