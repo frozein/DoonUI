@@ -10,18 +10,17 @@
 #include <FreeType/ft2build.h>
 #include FT_FREETYPE_H
 
+//--------------------------------------------------------------------------------------------------------------------------------//
+
 static bool _DNUI_load_into_buffer(const char* path, char** buffer);
 static bool _DNUI_load_shader_program(const char* vertPath, const char* fragPath, GLuint* program);
 
 //--------------------------------------------------------------------------------------------------------------------------------//
+//for rendering text:
 
 static GLuint textProgram;
 static GLuint textBuffer;
 static GLuint textArray;
-
-static GLuint rectProgram;
-static GLuint rectBuffer;
-static GLuint rectArray;
 
 static FT_Library freetypeLib;
 
@@ -45,9 +44,17 @@ typedef struct DNUIfont
 int curFont = 0;
 DNUIfont fonts[DNUI_MAX_FONTS];
 
-static DNmat3 projectionMat;
+//--------------------------------------------------------------------------------------------------------------------------------//
+//for rendering rectangles:
 
-static GLuint testTexture;
+static GLuint rectProgram;
+static GLuint rectBuffer;
+static GLuint rectArray;
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
+static DNvec2 windowSize;
+static DNmat3 projectionMat;
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
@@ -107,22 +114,43 @@ bool DNUI_init(unsigned int windowW, unsigned int windowH)
 		return false;
 	}
 
-	//create test texture:
-	//---------------------------------
-	/*glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	glGenTextures(1, &testTexture);
-	glBindTexture(GL_TEXTURE_2D, testTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, font->glyph->bitmap.width, font->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, font->glyph->bitmap.buffer);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
-
 	return true;
 }
 
-//code adapted from this tutorial: https://en.m.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_02
+void DNUI_close()
+{
+	glDeleteProgram(textProgram);
+	glDeleteBuffers(1, &textBuffer);
+	glDeleteVertexArrays(1, &textArray);
+
+	glDeleteProgram(rectProgram);
+	glDeleteBuffers(1, &rectBuffer);
+	glDeleteVertexArrays(1, &rectArray);
+
+	FT_Done_FreeType(freetypeLib);
+}
+
+DNvec2 DNUI_get_window_size()
+{
+	return windowSize;
+}
+
+void DNUI_set_window_size(unsigned int w, unsigned int h)
+{
+	//set vars:
+	//---------------------------------
+	windowSize.x = w;
+	windowSize.y = h;
+
+	//generate new projection matrix:
+	//---------------------------------
+	projectionMat = DN_MAT3_IDENTITY;
+	projectionMat.m[0][0] = 2.0f / w;
+	projectionMat.m[1][1] = 2.0f / h;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
 int DNUI_load_font(const char* path, int size)
 {	
 	//find new font index:
@@ -165,11 +193,13 @@ int DNUI_load_font(const char* path, int size)
 	int h = 0;
 	for(int i = 32; i < 128; i++)
 	{
-		if(FT_Load_Char(font, i, FT_LOAD_BITMAP_METRICS_ONLY))
+		if(FT_Load_Char(font, i, FT_LOAD_RENDER))
 		{
 			printf("DNUI ERROR - FAILED TO LOAD CHARACTER \"%c\"", i);
 			continue;
 		}
+
+		FT_Render_Glyph(font->glyph, FT_RENDER_MODE_SDF); //TODO: find a way to not render the text twice
 
 		w += font->glyph->bitmap.width + texturePadding;
 		if(font->glyph->bitmap.rows > h)
@@ -197,6 +227,8 @@ int DNUI_load_font(const char* path, int size)
 			continue;
 		}
 
+		FT_Render_Glyph(font->glyph, FT_RENDER_MODE_SDF);
+
 		//set data:
 		fonts[newIndex].glyphInfo[i].advance = font->glyph->advance.x / 64;
 		fonts[newIndex].glyphInfo[i].bmpW = font->glyph->bitmap.width;
@@ -219,48 +251,29 @@ int DNUI_load_font(const char* path, int size)
 	return newIndex;
 }
 
-void DNUI_close()
+void DNUI_free_font(int font)
 {
-	glDeleteProgram(textProgram);
-	glDeleteProgram(rectProgram);
-	glDeleteVertexArrays(1, &rectArray);
-	FT_Done_FreeType(freetypeLib);
+	glDeleteTextures(1, &fonts[font].textureAtlas);
+	fonts[font].textureAtlas = -1;
 }
 
-void DNUI_set_window_size(unsigned int w, unsigned int h)
+DNvec2 DNUI_string_render_size(const char* text, int font)
 {
-	//generate new projection matrix:
-	//---------------------------------
-	projectionMat = DN_MAT3_IDENTITY;
-	projectionMat.m[0][0] = 2.0f / w;
-	projectionMat.m[1][1] = 2.0f / h;
-	projectionMat.m[2][0] = -1.0f;
-	projectionMat.m[2][1] = -1.0f;
+	float w = 0.0;
+
+	for(char* c = (char*)text; *c != '\0'; c++)
+	{
+		if(*(c + 1) == '\0')
+			w += fonts[font].glyphInfo[*c].bmpL + fonts[font].glyphInfo[*c].bmpW;
+		else
+			w += fonts[font].glyphInfo[*c].advance;
+	}
+
+	return (DNvec2){w, fonts[font].atlasSize.y};
 }
 
-void DNUI_drawrect(DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad)
-{
-	DNmat3 model = DN_mat3_translate(DN_MAT3_IDENTITY, (DNvec2){center.x, center.y});
-	model = DN_mat3_rotate(model, angle);
-	model = DN_mat3_scale(model, (DNvec2){size.x * 0.5f, size.y * 0.5f});
-
-	model = DN_mat3_mult(projectionMat, model);
-
-	glUseProgram(rectProgram);
-
-	glUniformMatrix3fv(glGetUniformLocation(rectProgram, "model"), 1, GL_FALSE, (GLfloat*)&model);
-	glUniform4fv(glGetUniformLocation(rectProgram, "color"), 1, (GLfloat*)&color);
-	glUniform2fv(glGetUniformLocation(rectProgram, "size"), 1, (GLfloat*)&size);
-	glUniform1f(glGetUniformLocation(rectProgram, "cornerRad"), cornerRad);
-	glUniform1ui(glGetUniformLocation(rectProgram, "useTex"), false);
-	glUniform1i(glGetUniformLocation(rectProgram, "tex"), 0);
-
-	glBindVertexArray(rectArray);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-//code adapted from this tutorial: https://en.m.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_02
-void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 scale)
+//draws a single line of text
+void _DNUI_draw_string_line(const char* text, int font, DNvec2 pos, float scale, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
 {
 	//create vertex array:
 	//---------------------------------
@@ -285,19 +298,16 @@ void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 sca
 		float bmpW = fonts[font].glyphInfo[*c].bmpW / fonts[font].atlasSize.x;
 		float bmpH = fonts[font].glyphInfo[*c].bmpH / fonts[font].atlasSize.y;
 
-		float x =  pos.x + fonts[font].glyphInfo[*c].bmpL * scale.x;
-		float y = -pos.y - fonts[font].glyphInfo[*c].bmpT * scale.y;
-		float w = fonts[font].glyphInfo[*c].bmpW * scale.x;
-		float h = fonts[font].glyphInfo[*c].bmpH * scale.y;
+		float x =  pos.x + fonts[font].glyphInfo[*c].bmpL * scale;
+		float y = -pos.y - fonts[font].glyphInfo[*c].bmpT * scale;
+		float w = fonts[font].glyphInfo[*c].bmpW * scale;
+		float h = fonts[font].glyphInfo[*c].bmpH * scale;
 
-		pos.x += fonts[font].glyphInfo[*c].advance * scale.x;
+		pos.x += fonts[font].glyphInfo[*c].advance * scale;
 
 		//don't render spaces
 		if(w <= 0.0 || h <= 0.0)
-		{
-			numVertices -= 6;
 			continue;
-		}
 
 		vertices[i++] = (struct Vertex){x	 , -y	 , texOffset		, 0.0 };
 		vertices[i++] = (struct Vertex){x + w, -y	 , texOffset + bmpW, 0.0 };
@@ -310,20 +320,119 @@ void DNUI_drawstring(const char* text, unsigned int font, DNvec2 pos, DNvec2 sca
 	//send to GPU:
 	//---------------------------------
 	glBindBuffer(GL_ARRAY_BUFFER, textBuffer);
-	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(GLfloat) * numVertices, vertices, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(GLfloat) * i, vertices, GL_DYNAMIC_DRAW);
 
 	glUseProgram(textProgram);
-	glUniform4f(glGetUniformLocation(textProgram, "color"), 1.0, 1.0, 1.0, 1.0);
+	glUniform4fv(glGetUniformLocation(textProgram, "color"), 1, (GLfloat*)&color);
+	glUniform4fv(glGetUniformLocation(textProgram, "outlineColor"), 1, (GLfloat*)&outlineColor);
 	glUniformMatrix3fv(glGetUniformLocation(textProgram, "projection"), 1, GL_FALSE, (GLfloat*)&projectionMat);
 	glUniform1i(glGetUniformLocation(textProgram, "textureAtlas"), 0);
+	glUniform1f(glGetUniformLocation(textProgram, "scale"), scale);
+	glUniform1f(glGetUniformLocation(textProgram, "thickness"), 1.0 - thickness);
+	glUniform1f(glGetUniformLocation(textProgram, "softness"), softness);
+	glUniform1f(glGetUniformLocation(textProgram, "outlineThickness"), 1.0 - outlineThickness);
+	glUniform1f(glGetUniformLocation(textProgram, "outlineSoftness"), outlineSoftness);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, fonts[font].textureAtlas);
 
 	glBindVertexArray(textArray);
-	glDrawArrays(GL_TRIANGLES, 0, numVertices);
+	glDrawArrays(GL_TRIANGLES, 0, i);
 
 	free(vertices);
 }
+
+void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float maxW, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
+{
+	if(maxW <= 0.0)
+	{
+		_DNUI_draw_string_line(text, font, pos, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+		return;
+	}
+
+	int len = strlen(text);
+	int numLines = 0;
+	int startPos = 0;
+	int lastSpace = -1;
+	float curWidth = 0.0;
+
+	int i;
+	for(i = 0; i < len; i++)
+	{
+		char test = text[i];
+
+		if(text[i] == ' ')
+		{
+			lastSpace = i;
+			curWidth += fonts[font].glyphInfo[text[i]].advance * scale;
+		}
+		else if(curWidth + (fonts[font].glyphInfo[text[i]].bmpL + fonts[font].glyphInfo[text[i]].bmpW) * scale > maxW)
+		{
+			char* line;
+
+			int endPos = lastSpace <= startPos ? i : lastSpace + 1;
+			line = malloc(endPos - startPos + 1);
+			memcpy(line, &text[startPos], endPos - startPos);
+			line[endPos - startPos] = '\0';
+
+			_DNUI_draw_string_line(line, font, (DNvec2){pos.x, pos.y - fonts[font].atlasSize.y * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+
+			free(line);
+
+			numLines++;
+			startPos = endPos;
+			i = startPos;
+			curWidth = 0.0;
+		}
+		else
+			curWidth += fonts[font].glyphInfo[text[i]].advance * scale;
+	}
+
+	if(i > startPos)
+	{
+		char* line;
+
+		line = malloc(i - startPos + 1);
+		memcpy(line, &text[startPos], i - startPos);
+		line[i - startPos] = '\0';
+
+		_DNUI_draw_string_line(line, font, (DNvec2){pos.x, pos.y - fonts[font].atlasSize.y * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+
+		free(line);
+	}
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
+void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad)
+{
+	DNmat3 model = DN_mat3_translate(DN_MAT3_IDENTITY, (DNvec2){center.x, center.y});
+	model = DN_mat3_rotate(model, angle);
+	model = DN_mat3_scale(model, (DNvec2){size.x * 0.5f, size.y * 0.5f});
+
+	model = DN_mat3_mult(projectionMat, model);
+
+	glUseProgram(rectProgram);
+
+	glUniformMatrix3fv(glGetUniformLocation(rectProgram, "model"), 1, GL_FALSE, (GLfloat*)&model);
+	glUniform4fv(glGetUniformLocation(rectProgram, "color"), 1, (GLfloat*)&color);
+	glUniform2fv(glGetUniformLocation(rectProgram, "size"), 1, (GLfloat*)&size);
+	glUniform1f(glGetUniformLocation(rectProgram, "cornerRad"), cornerRad);
+
+	if(textureHandle >= 0)
+	{
+		glUniform1ui(glGetUniformLocation(rectProgram, "useTex"), true);
+		glUniform1i(glGetUniformLocation(rectProgram, "tex"), 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureHandle);
+	}
+	else
+		glUniform1ui(glGetUniformLocation(rectProgram, "useTex"), false);
+
+	glBindVertexArray(rectArray);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
 
 static bool _DNUI_load_into_buffer(const char* path, char** buffer)
 {
