@@ -8,110 +8,111 @@ extern "C"
 
 DNUIcoordinate::DNUIcoordinate()
 {
-	type = DNUI_COORDINATE_RELATIVE;
+	type = RELATIVE;
 	relativePos = 1.0f;
-	center = DNUI_CENTER_CENTER;
+	center = CENTER_CENTER;
 }
 
-DNUIcoordinate::DNUIcoordinate(DNUIcoordinateType t, float param, DNUIcenter c)
+DNUIcoordinate::DNUIcoordinate(DNUIcoordinate::Type t, float param, DNUIcoordinate::Center c)
 {
 	type = t;
-	relativePos = param; //they are all single floats so this is fine
+	relativePos = param; //all parameters are single floats, so this will apply to all of them
 	center = c;
 };
 
+//--------------------------------------------------------------------------------------------------------------------------------//
+
 DNUIdimension::DNUIdimension()
 {
-	type = DNUI_DIMENSION_RELATIVE;
+	type = RELATIVE;
 	relativeSize = 1.0f;
 }
 
-DNUIdimension::DNUIdimension(DNUIdimensionType t, float param)
+DNUIdimension::DNUIdimension(DNUIdimension::Type t, float param)
 {
 	type = t;
-	relativeSize = param; //they are all single floats so this is fine
+	relativeSize = param; //all parameters are single floats, so this will apply to all of them
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
+//calculates the position an element should be rendered at for one dimension
 float _DNUI_calc_pos_one_dimension(float parentPos, float parentSize, float size, DNUIcoordinate coordinate)
 {
-	float pos;
+	float pos = 0.0f;
 
-	switch(coordinate.type)
-	{
-	case DNUI_COORDINATE_PIXEL:
+	//find position relative to parent:
+	if(coordinate.type == DNUIcoordinate::PIXELS)
 		switch(coordinate.center)
 		{
-		case DNUI_CENTER_CENTER:
+		case DNUIcoordinate::CENTER_CENTER:
 		{
 			pos = parentPos + coordinate.pixelPos;
 			break;
 		}
-		case DNUI_CENTER_MAX:
+		case DNUIcoordinate::CENTER_MAX:
 		{
 			pos = parentPos + parentSize * 0.5f - coordinate.pixelPos;
 			break;
 		}
-		case DNUI_CENTER_MIN:
+		case DNUIcoordinate::CENTER_MIN:
 		{
 			pos = parentPos - parentSize * 0.5f + coordinate.pixelPos;
 		}
 		}
-		break;
-	case DNUI_COORDINATE_RELATIVE:
+	else if (coordinate.type == DNUIcoordinate::RELATIVE)
 		pos =  parentPos + parentSize * (coordinate.relativePos - 0.5f);
-		break;
-	}
 
-	switch(coordinate.center)
-	{
-	case DNUI_CENTER_CENTER:
-		return pos;
-	case DNUI_CENTER_MIN:
-		return pos + size * 0.5f;
-	case DNUI_CENTER_MAX:
-		return pos - size * 0.5f;
-	default:
-		return 0.0f; //to make compiler shut up
-	}
+	//account for centering:
+	if(coordinate.center == DNUIcoordinate::CENTER_MIN)
+		pos += size * 0.5f;
+	else if(coordinate.center == DNUIcoordinate::CENTER_MAX)
+		pos -= size * 0.5f;
+
+	//return:
+	return pos;
 }
 
-void DNUIelement::calculate_pixel_pos(DNvec2 parentPos, DNvec2 parentSize)
+//calculates the position an element should be rendered at
+DNvec2 _DNUI_calc_render_pos(DNvec2 parentPos, DNvec2 parentSize, DNvec2 size, DNUIcoordinate x, DNUIcoordinate y)
 {
-	pixelPos = {_DNUI_calc_pos_one_dimension(parentPos.x, parentSize.x, pixelSize.x, xPos), _DNUI_calc_pos_one_dimension(parentPos.y, parentSize.y, pixelSize.y, yPos)};
+	return {_DNUI_calc_pos_one_dimension(parentPos.x, parentSize.x, size.x, x), _DNUI_calc_pos_one_dimension(parentPos.y, parentSize.y, size.y, y)};
 }
 
+//calculates the size an element should be rendered at for one dimension
 float _DNUI_calc_size_one_dimension(float parentSize, DNUIdimension dimension)
 {
 	switch(dimension.type)
 	{
-	case DNUI_DIMENSION_PIXELS:
+	case DNUIdimension::PIXELS:
 		return dimension.pixelSize;
-	case DNUI_DIMENSION_RELATIVE:
+	case DNUIdimension::RELATIVE:
 		return parentSize * dimension.relativeSize;
-	case DNUI_DIMENSION_SPACE:
+	case DNUIdimension::SPACE:
 		return parentSize - dimension.emptyPixels;
 	default:
 		return parentSize;
 	}
 }
 
-void DNUIelement::calculate_pixel_size(DNvec2 parentSize)
+//calculates the size an element should be rendered at
+DNvec2 _DNUI_calc_render_size(DNvec2 parentSize, DNUIdimension width, DNUIdimension height)
 {
-	if(width.type == DNUI_DIMENSION_ASPECT)
+	if(width.type == DNUIdimension::ASPECT)
 	{
 		float h = _DNUI_calc_size_one_dimension(parentSize.y, height);
-		pixelSize = {h * width.aspectRatio, h};
+		return {h * width.aspectRatio, h};
 	}
-	else if(height.type == DNUI_DIMENSION_ASPECT)
+	else if(height.type == DNUIdimension::ASPECT)
 	{
 		float w = _DNUI_calc_size_one_dimension(parentSize.x, width);
-		pixelSize = {w, w * height.aspectRatio};
+		return {w, w * height.aspectRatio};
 	}
 	else
-		pixelSize = {_DNUI_calc_size_one_dimension(parentSize.x, width), _DNUI_calc_size_one_dimension(parentSize.y, height)};
+		return {_DNUI_calc_size_one_dimension(parentSize.x, width), _DNUI_calc_size_one_dimension(parentSize.y, height)};
 }
+
+//--------------------------------------------------------------------------------------------------------------------------------//
 
 DNUIelement::DNUIelement()
 {
@@ -162,16 +163,15 @@ DNUIbox::DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimens
 
 void DNUIbox::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
-	calculate_pixel_size(parentSize);
-	calculate_pixel_pos(parentPos, parentSize);
+	renderSize = _DNUI_calc_render_size(parentSize, width, height);
+	renderPos = _DNUI_calc_render_pos(parentPos, parentSize, renderSize, xPos, yPos);
 
-	DNUIelement::update(dt, pixelPos, pixelSize);
+	DNUIelement::update(dt, renderPos, renderSize);
 }
 
 void DNUIbox::render()
 {
-	DNUI_draw_rect(texture, pixelPos, pixelSize, 0.0f, color, cornerRadius);
-
+	DNUI_draw_rect(texture, renderPos, renderSize, 0.0f, color, cornerRadius);
 	DNUIelement::render();
 }
 
@@ -179,6 +179,8 @@ void DNUIbox::render()
 
 DNUItext::DNUItext() : DNUIelement::DNUIelement()
 {
+	height = DNUIdimension(DNUIdimension::RELATIVE, 1.0f);
+
 	text = "Hello World!";
 	color = {1.0f, 1.0f, 1.0f};
 	font = -1;
@@ -192,27 +194,12 @@ DNUItext::DNUItext() : DNUIelement::DNUIelement()
 	outlineSoftness = 0.0f;
 }
 
-DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string txt, DNvec4 col, int fnt, float scl, float lnW, int algn) : DNUItext::DNUItext()
+DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string txt, int fnt, DNvec4 col, float scl, float lnW, int algn, float thick, float soft, DNvec4 outlineCol, float outlineThick, float outlineSoft)
 {
 	xPos = x;
 	yPos = y;
 	width = size;
-	height = DNUIdimension(DNUI_DIMENSION_RELATIVE, 1.0f);
-
-	text = txt;
-	color = col;
-	font = fnt;
-	scale = scl;
-	lineWrap = lnW;
-	align = algn;
-}
-
-DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string txt, DNvec4 col, int fnt, float scl, float lnW, int algn, float thick, float soft, DNvec4 outlineCol, float outlineThick, float outlineSoft)
-{
-	xPos = x;
-	yPos = y;
-	width = size;
-	height = DNUIdimension(DNUI_DIMENSION_RELATIVE, 1.0f);
+	height = DNUIdimension(DNUIdimension::RELATIVE, 1.0f);
 
 	text = txt;
 	color = col;
@@ -229,32 +216,32 @@ DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::
 
 void DNUItext::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
-	calculate_pixel_size(parentSize); //get required size
+	float requiredWidth = _DNUI_calc_size_one_dimension(parentSize.x, width);
 	if(lineWrap <= 0.0f)
 	{
-		renderScale = pixelSize.x / DNUI_string_render_size(text.c_str(), font, 1.0f, 0.0f).x;
+		renderScale = requiredWidth / DNUI_string_render_size(text.c_str(), font, 1.0f, 0.0f).x;
 		renderW = 0.0f;
 	}
 	else
 	{
-		renderW = pixelSize.x;
+		renderW = requiredWidth;
 
 		if(scale <= 0.0f)
-			renderScale = pixelSize.x / lineWrap;
+			renderScale = requiredWidth / lineWrap;
 		else
 			renderScale = scale;
 	}
 
-	pixelSize = DNUI_string_render_size(text.c_str(), font, renderScale, renderW);
-	calculate_pixel_pos(parentPos, parentSize);
+	DNvec2 renderSize = DNUI_string_render_size(text.c_str(), font, renderScale, renderW);
+	renderPos = _DNUI_calc_render_pos(parentPos, parentSize, renderSize, xPos, yPos);
 
-	DNUIelement::update(dt, pixelPos, pixelSize);
+	DNUIelement::update(dt, renderPos, renderSize);
 }
 
 void DNUItext::render()
 {
 	if(font >= 0)
-		DNUI_draw_string(text.c_str(), font, pixelPos, renderScale, renderW, align, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+		DNUI_draw_string(text.c_str(), font, renderPos, renderScale, renderW, align, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
 
 	DNUIelement::render();
 }

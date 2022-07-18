@@ -62,15 +62,15 @@ int main()
 	DNUI_init(windowSize.x, windowSize.y);
 	int arialFont = DNUI_load_font("arial.ttf", 72);
 
-	DNUIbox testBox = DNUIbox(DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MAX), DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.5f), DNUIdimension(DNUI_DIMENSION_ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, -1);
+	DNUIbox testBox = DNUIbox(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, -1);
 	
-	DNUItext* testText = new DNUItext(DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MIN), DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MIN), 
-	DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.25f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", {1.0f, 1.0f, 1.0f, 1.0f}, arialFont, 0.5f, 300.0f, 0);
+	DNUItext* testText = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), 
+	DNUIdimension(DNUIdimension::RELATIVE, 0.25f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 300.0f);
 
-	DNUIbox* testBox3 = new DNUIbox(DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.5f), DNUIdimension(DNUI_DIMENSION_ASPECT, 1.0f), {0.0f, 0.0f, 1.0f, 1.0f}, 20.0f, -1);
+	DNUIbox* testBox3 = new DNUIbox(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {0.0f, 0.0f, 1.0f, 1.0f}, 20.0f, -1);
 	testText->children.push_back((DNUIelement*)testBox3);
 
-	DNUIbox* testBox2 = new DNUIbox(DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MIN), DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.5f), DNUIdimension(DNUI_DIMENSION_ASPECT, 1.0f), {0.0f, 1.0f, 0.0f, 1.0f}, 20.0f, -1);
+	DNUIbox* testBox2 = new DNUIbox(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {0.0f, 1.0f, 0.0f, 1.0f}, 20.0f, -1);
 	testBox.children.push_back((DNUIelement*)testBox2);
 	testBox.children.push_back((DNUIelement*)testText);
 
