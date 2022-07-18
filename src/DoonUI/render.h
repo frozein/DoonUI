@@ -40,26 +40,39 @@ int DNUI_load_font(const char* path, int size);
  */
 void DNUI_free_font(int font);
 
-/* Calculates the size of a rendered string
- * @param text the string from which to calculate the size
- * @param font the handle to the font to be used
- * @returns the size of the string, when rendered, in pixels
+/* Calculates the size of a string when rendered to the screen
+ * @param text the string to calculate
+ * @param font the handle to the font to use
+ * @param scale the scale of the text, a scale of 1.0 means that the font will be rendered at its actual resolution
+ * @param wrap the maximum number of pixels the string can extend horizontally before wrapping to a new line. Set to 0 if no wrapping is desired
+ * @returns the size of the string when rendered, in pixels
  */
-DNvec2 DNUI_string_render_size(const char* text, int font);
+DNvec2 DNUI_string_render_size(const char* text, int font, float scale, float wrap);
 /* Renders a string to the screen
  * @param text the string to render
  * @param font the handle to the font to use
- * @param pos the position at which to render the font, in pixels. denotes the origin of the string, meaning that it will extend from pos.x to pos.x + the total width. characters will be rendered mostly above pos.y, but some, such as "g" will extend below pos.y
+ * @param pos the position of the center of the string, in pixels
  * @param scale the scale of the text, a scale of 1.0 means that the font will be rendered at its actual resolution
+ * @param wrap the maximum number of pixels the string can extend horizontally before wrapping to a new line. Set to 0 if no wrapping is desired
+ * @param align how to align the text when wrapping: 0 = align left (all lines start at left side), 1 = align right (all lines end at right side), 2 = align center (all lines are individually centered)
  * @param color the color of the text, in rgba format
- * @param maxLen the maximum width of the text, in pixels, before a new line is created. Set to 0 if no maximum is desired
  * @param thickness the thickness of the text, 0.5 is the default value
  * @param softness the softness of the text's edges, 0.05 is the default value
  * @param outlineColor the color of the text's outline, in rgba format
  * @param outlineThickness the thickness at which the text's outline begins. Set to 1.0 if no outline is desired
  * @param outlineSoftness the softness of the outline's edges, 0.05 is the default value
  */
-void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float maxW, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness);
+void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float wrap, int align, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness);
+/* Renders a string to the screen, same as DNUI_draw_string() but with fewer parameters
+ * @param text the string to render
+ * @param font the handle to the font to use
+ * @param pos the position of the center of the string, in pixels
+ * @param scale the scale of the text, a scale of 1.0 means that the font will be rendered at its actual resolution
+ * @param wrap the maximum number of pixels the string can extend horizontally before wrapping to a new line. Set to 0 if no wrapping is desired
+ * @param align how to align the text when wrapping: 0 = align left (all lines start at left side), 1 = align right (all lines end at right side), 2 = align center (all lines are individually centered)
+ * @param color the color of the text, in rgba format
+ */
+void DNUI_draw_string_simple(const char* text, int font, DNvec2 pos, float scale, float wrap, int align, DNvec4 color);
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //RECT RENDERING:

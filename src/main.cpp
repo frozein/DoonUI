@@ -64,8 +64,15 @@ int main()
 
 	DNUIbox testBox = DNUIbox(DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MAX), DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.5f), DNUIdimension(DNUI_DIMENSION_ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, -1);
 	
+	DNUItext* testText = new DNUItext(DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MIN), DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MIN), 
+	DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.25f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", {1.0f, 1.0f, 1.0f, 1.0f}, arialFont, 0.5f, 300.0f, 0);
+
+	DNUIbox* testBox3 = new DNUIbox(DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.5f), DNUIdimension(DNUI_DIMENSION_ASPECT, 1.0f), {0.0f, 0.0f, 1.0f, 1.0f}, 20.0f, -1);
+	testText->children.push_back((DNUIelement*)testBox3);
+
 	DNUIbox* testBox2 = new DNUIbox(DNUIcoordinate(DNUI_COORDINATE_PIXEL, 20.0f, DNUI_CENTER_MIN), DNUIcoordinate(DNUI_COORDINATE_RELATIVE, 0.5f, DNUI_CENTER_CENTER), DNUIdimension(DNUI_DIMENSION_RELATIVE, 0.5f), DNUIdimension(DNUI_DIMENSION_ASPECT, 1.0f), {0.0f, 1.0f, 0.0f, 1.0f}, 20.0f, -1);
 	testBox.children.push_back((DNUIelement*)testBox2);
+	testBox.children.push_back((DNUIelement*)testText);
 
 	//main loop:
 	//---------------------------------
@@ -77,7 +84,7 @@ int main()
 		testBox.update(1.0f, {0.0f, 0.0f}, {(float)windowSize.x, (float)windowSize.y});
 		testBox.render();
 		//DNUI_draw_rect(-1, {0, 720 / 2}, {w * 2, 600}, 0.0f, {1.0, 1.0, 0.0, 1.0}, 30);
-		//DNUI_draw_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean et arcu metus. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam vitae nulla vitae neque lacinia sollicitudin ac ut ipsum. Phasellus leo quam, lobortis ac tincidunt a, molestie non eros. Nulla ultrices fermentum justo, a porta nisl. Vivamus bibendum tempus augue, non aliquam quam dapibus in.", arialFont, {0, 620}, 0.5f, w, {1.0f, 1.0f, 1.0f, 1.0f}, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
+		//DNUI_draw_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean et arcu metus. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam vitae nulla vitae neque lacinia sollicitudin ac ut ipsum. Phasellus leo quam, lobortis ac tincidunt a, molestie non eros. Nulla ultrices fermentum justo, a porta nisl. Vivamus bibendum tempus augue, non aliquam quam dapibus in.", arialFont, {0, 0}, 0.5f, 500, 2, {1.0f, 1.0f, 1.0f, 1.0f}, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
 		//DNUI_draw_string("Hello world!", arialFont, {100, 350}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.55f, 0.05f, {1.0f, 0.0f, 0.0f, 1.0f}, 0.45f, 0.05f);
 		//DNUI_draw_string("Hello world!", arialFont, {100, 150}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 0.05f, {0.0f, 1.0f, 0.0f, 1.0f}, 0.45f, 0.5f);
 

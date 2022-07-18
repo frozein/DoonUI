@@ -135,7 +135,7 @@ DNUIelement::~DNUIelement()
 void DNUIelement::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
 	for(int i = 0; i < children.size(); i++)
-		children[i]->update(dt, pixelPos, pixelSize);
+		children[i]->update(dt, parentPos, parentSize);
 }
 
 void DNUIelement::render()
@@ -165,12 +165,96 @@ void DNUIbox::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 	calculate_pixel_size(parentSize);
 	calculate_pixel_pos(parentPos, parentSize);
 
-	DNUIelement::update(dt, parentPos, parentSize);
+	DNUIelement::update(dt, pixelPos, pixelSize);
 }
 
 void DNUIbox::render()
 {
 	DNUI_draw_rect(texture, pixelPos, pixelSize, 0.0f, color, cornerRadius);
+
+	DNUIelement::render();
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
+DNUItext::DNUItext() : DNUIelement::DNUIelement()
+{
+	text = "Hello World!";
+	color = {1.0f, 1.0f, 1.0f};
+	font = -1;
+	scale = 1.0f;
+	lineWrap = 0.0f;
+	align = 0;
+	thickness = 0.5f;
+	softness = 0.05f;
+	outlineColor = {0.0f, 0.0f, 0.0f, 1.0f};
+	outlineThickness = 1.0f;
+	outlineSoftness = 0.0f;
+}
+
+DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string txt, DNvec4 col, int fnt, float scl, float lnW, int algn) : DNUItext::DNUItext()
+{
+	xPos = x;
+	yPos = y;
+	width = size;
+	height = DNUIdimension(DNUI_DIMENSION_RELATIVE, 1.0f);
+
+	text = txt;
+	color = col;
+	font = fnt;
+	scale = scl;
+	lineWrap = lnW;
+	align = algn;
+}
+
+DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string txt, DNvec4 col, int fnt, float scl, float lnW, int algn, float thick, float soft, DNvec4 outlineCol, float outlineThick, float outlineSoft)
+{
+	xPos = x;
+	yPos = y;
+	width = size;
+	height = DNUIdimension(DNUI_DIMENSION_RELATIVE, 1.0f);
+
+	text = txt;
+	color = col;
+	font = fnt;
+	scale = scl;
+	lineWrap = lnW;
+	align = algn;
+	thickness = thick;
+	softness = soft;
+	outlineColor = outlineCol;
+	outlineThickness = outlineThick;
+	outlineSoftness = outlineSoft;
+}
+
+void DNUItext::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
+{
+	calculate_pixel_size(parentSize); //get required size
+	if(lineWrap <= 0.0f)
+	{
+		renderScale = pixelSize.x / DNUI_string_render_size(text.c_str(), font, 1.0f, 0.0f).x;
+		renderW = 0.0f;
+	}
+	else
+	{
+		renderW = pixelSize.x;
+
+		if(scale <= 0.0f)
+			renderScale = pixelSize.x / lineWrap;
+		else
+			renderScale = scale;
+	}
+
+	pixelSize = DNUI_string_render_size(text.c_str(), font, renderScale, renderW);
+	calculate_pixel_pos(parentPos, parentSize);
+
+	DNUIelement::update(dt, pixelPos, pixelSize);
+}
+
+void DNUItext::render()
+{
+	if(font >= 0)
+		DNUI_draw_string(text.c_str(), font, pixelPos, renderScale, renderW, align, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
 
 	DNUIelement::render();
 }

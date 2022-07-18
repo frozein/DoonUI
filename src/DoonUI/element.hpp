@@ -2,6 +2,7 @@
 #define DNUI_ELEMENT_H
 
 #include <vector>
+#include <string>
 #include "math/common.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -100,6 +101,35 @@ public:
 
 	DNUIbox();
 	DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad, int tex);
+
+	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
+	void render();
+};
+
+class DNUItext : public DNUIelement
+{
+private:
+	float renderScale;
+	float renderW;
+
+public:
+	std::string text;
+
+	DNvec4 color;
+	int font;
+	float scale;
+	float lineWrap;
+	int align;
+	float thickness;
+	float softness;
+
+	DNvec4 outlineColor;
+	float outlineThickness;
+	float outlineSoftness;
+
+	DNUItext();
+	DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string text, DNvec4 color, int font, float scale, float lineWrap, int align);
+	DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string text, DNvec4 color, int font, float scale, float lineWrap, int align, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness);
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void render();
