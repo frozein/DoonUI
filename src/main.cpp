@@ -8,15 +8,23 @@
 extern "C" //idk why but this works
 {
 	#include "DoonUI/render.h"
+	#include "DoonUI/math/vector.h"
 }
 
 DNivec2 windowSize = {1280, 720};
+DNUIelement* baseElement;
 
 void window_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 	DNUI_set_window_size(width, height);
 	windowSize = {width, height};
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+		baseElement->handle_event(DNUIevent(DNUIevent::MOUSE_RELEASE));
 }
 
 int main()
@@ -53,6 +61,7 @@ int main()
 	//---------------------------------
 	glViewport(0, 0, windowSize.x, windowSize.y);
 	glfwSetWindowSizeCallback(window, window_size_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
@@ -62,22 +71,27 @@ int main()
 	DNUI_init(windowSize.x, windowSize.y);
 	int arialFont = DNUI_load_font("arial.ttf", 72);
 
-	DNUIbox testBox = DNUIbox(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, -1);
+	DNUIbutton testBox = DNUIbutton(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, nullptr, 0, 20.0f, -1);
 	
-	DNUItext* testText = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), 
-	DNUIdimension(DNUIdimension::RELATIVE, 0.25f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 300.0f);
+	DNUItext* testText = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 
+	DNUIdimension(DNUIdimension::RELATIVE, 0.45f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 300.0f);
 
-	DNUIbox* testBox3 = new DNUIbox(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {0.0f, 0.0f, 1.0f, 1.0f}, 20.0f, -1);
-	testText->children.push_back((DNUIelement*)testBox3);
+	DNUItext* testText2 = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 
+	DNUIdimension(DNUIdimension::RELATIVE, 0.45f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, -1.0f, 600.0f, 1);
 
-	DNUIbox* testBox2 = new DNUIbox(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {0.0f, 1.0f, 0.0f, 1.0f}, 20.0f, -1);
-	testBox.children.push_back((DNUIelement*)testBox2);
 	testBox.children.push_back((DNUIelement*)testText);
+	testBox.children.push_back((DNUIelement*)testText2);
+
+	baseElement = &testBox;
 
 	//main loop:
 	//---------------------------------
 	while(!glfwWindowShouldClose(window))
 	{
+		double mouseX, mouseY;
+		glfwGetCursorPos(window, &mouseX, &mouseY);
+		DNUIbutton::set_mouse_state({(float)mouseX - windowSize.x * 0.5f, (float)mouseY - windowSize.y * 0.5f}, glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS);
+
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

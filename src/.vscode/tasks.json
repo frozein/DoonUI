@@ -13,6 +13,7 @@
 				"/Zi",
 				"/EHsc",
 				"/nologo",
+				"/std:c++17",
 				"/Fe:",
 				"${workspaceFolder}\\..\\bin\\doonui_x64.exe",
 

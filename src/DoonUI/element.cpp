@@ -36,6 +36,18 @@ DNUIdimension::DNUIdimension(DNUIdimension::Type t, float param)
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
+DNUIevent::DNUIevent()
+{
+	type = DNUIevent::NONE;
+}
+
+DNUIevent::DNUIevent(DNUIevent::Type typ)
+{
+	type = typ;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
 //calculates the position an element should be rendered at for one dimension
 float _DNUI_calc_pos_one_dimension(float parentPos, float parentSize, float size, DNUIcoordinate coordinate)
 {
@@ -145,6 +157,12 @@ void DNUIelement::render()
 		children[i]->render();
 }
 
+void DNUIelement::handle_event(DNUIevent event)
+{
+	for(int i = 0; i < children.size(); i++)
+		children[i]->handle_event(event);
+}
+
 //--------------------------------------------------------------------------------------------------------------------------------//
 
 DNUIbox::DNUIbox()
@@ -173,6 +191,59 @@ void DNUIbox::render()
 {
 	DNUI_draw_rect(texture, renderPos, renderSize, 0.0f, color, cornerRadius);
 	DNUIelement::render();
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
+DNUIbutton::DNUIbutton() : DNUIbox::DNUIbox()
+{
+	button_callback = nullptr;
+	callbackID = 0;
+}
+
+DNUIbutton::DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, void (*buttonCallback)(int), int id, float cornerRad, int tex) : DNUIbox::DNUIbox(x, y, w, h, col, cornerRad, tex)
+{
+	button_callback = buttonCallback;
+	callbackID = id;
+}
+
+void DNUIbutton::set_mouse_state(DNvec2 pos, bool pressed)
+{
+	mousePos = pos;
+	mousePressed = pressed;
+}
+
+void DNUIbutton::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
+{
+	if(mousePos.x > renderPos.x - renderSize.x * 0.5f && mousePos.x < renderPos.x + renderSize.x * 0.5f &&
+	   mousePos.y > renderPos.y - renderSize.y * 0.5f && mousePos.y < renderPos.y + renderSize.y * 0.5f)
+	{
+		if(mousePressed)
+		{
+			//pressed anim state
+		}
+		else
+		{
+			//hovered anim state
+		}
+	}
+	else
+	{
+		//base anim state
+	}
+
+	DNUIbox::update(dt, parentPos, parentSize);
+}
+
+void DNUIbutton::handle_event(DNUIevent event)
+{
+	if(event.type == DNUIevent::MOUSE_RELEASE)
+	{
+		if(button_callback != nullptr)
+			button_callback(callbackID);
+	}
+
+	DNUIelement::handle_event(event);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//

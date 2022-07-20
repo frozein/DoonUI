@@ -60,6 +60,23 @@ struct DNUIdimension
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------//
+//EVENT STRUCT:
+
+struct DNUIevent
+{
+	enum Type
+	{
+		NONE,
+		MOUSE_RELEASE
+	} type;
+
+	//data here
+
+	DNUIevent();
+	DNUIevent(DNUIevent::Type type);
+};
+
+//--------------------------------------------------------------------------------------------------------------------------------//
 //ELEMENT CLASS:
 
 //a generic UI element, has no functionality on its own other than to update/render child elements
@@ -88,14 +105,17 @@ public:
 	virtual void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	//calls render() on all child elements, can be overriden
 	virtual void render();
+	//calls handle_event() on all child elements, can be overriden
+	virtual void handle_event(DNUIevent event);
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //DEFAULT ELEMENTS:
 
+//a simple rectangle
 class DNUIbox : public DNUIelement
 {
-private:
+protected:
 	DNvec2 renderPos;  //the final position of the box's center, in pixels
 	DNvec2 renderSize; //the final size of the box, in pixels
 
@@ -119,6 +139,41 @@ public:
 	void render();
 };
 
+//a button that calls a user-defined function when clicked
+class DNUIbutton : public DNUIbox
+{
+private:
+	inline static DNvec2 mousePos;  //the mouse's current screen position
+	inline static bool mousePressed; //whether or not the mouse button is held down
+
+public:
+	void (*button_callback)(int); //the function that gets called when the button is clicked
+	int callbackID;				  //the unique id that gets passed to the callback function, used to differentiate buttons that have the same callback func
+
+	DNUIbutton();
+	/* @param x the x position of the box
+	 * @param y the y position of the box
+	 * @param w the width of the box
+	 * @param h the height of the box
+	 * @param color the color of the box
+	 * @param buttonCallback the function that gets called when this button is clicked
+	 * @param callbackID the value that gets passed to the callback function, can be used to identify buttons that use the same callback func
+	 * @param cornerRad the radius of the box's corners, in pixels
+	 * @param tex the openGL texture handle to use when rendering, or -1 if no texture is desired
+	 */
+	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 color, void (*buttonCallback)(int), int callbackID = 0, float cornerRad = 0.0f, int tex = -1);
+
+	/* Call whenever the cursor position or the state of the mouse button changes, will NOT invoke any of the button callback functions, for that, a DNUIevent must be sent
+	 * @param pos the mouse's screen position, with {0, 0} denoting the center of the screen
+	 * @param pressed whether or not the main selection button is held down, used for animations
+	 */
+	static void set_mouse_state(DNvec2 pos, bool pressed);
+
+	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
+	void handle_event(DNUIevent event);
+};
+
+//a string of text
 class DNUItext : public DNUIelement
 {
 private:
