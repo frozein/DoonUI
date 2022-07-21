@@ -2,48 +2,7 @@
 extern "C"
 {
 	#include "render.h"
-}
-
-//--------------------------------------------------------------------------------------------------------------------------------//
-
-DNUIcoordinate::DNUIcoordinate()
-{
-	type = RELATIVE;
-	relativePos = 1.0f;
-	center = CENTER_CENTER;
-}
-
-DNUIcoordinate::DNUIcoordinate(DNUIcoordinate::Type t, float param, DNUIcoordinate::Center c)
-{
-	type = t;
-	relativePos = param; //all parameters are single floats, so this will apply to all of them
-	center = c;
-};
-
-//--------------------------------------------------------------------------------------------------------------------------------//
-
-DNUIdimension::DNUIdimension()
-{
-	type = RELATIVE;
-	relativeSize = 1.0f;
-}
-
-DNUIdimension::DNUIdimension(DNUIdimension::Type t, float param)
-{
-	type = t;
-	relativeSize = param; //all parameters are single floats, so this will apply to all of them
-}
-
-//--------------------------------------------------------------------------------------------------------------------------------//
-
-DNUIevent::DNUIevent()
-{
-	type = DNUIevent::NONE;
-}
-
-DNUIevent::DNUIevent(DNUIevent::Type typ)
-{
-	type = typ;
+	#include "math/vector.h"
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -124,19 +83,124 @@ DNvec2 _DNUI_calc_render_size(DNvec2 parentSize, DNUIdimension width, DNUIdimens
 		return {_DNUI_calc_size_one_dimension(parentSize.x, width), _DNUI_calc_size_one_dimension(parentSize.y, height)};
 }
 
+void _DNUI_lerp_pos(DNUIcoordinate* x, DNUIcoordinate* y, DNvec2 parentSize, DNvec2 size, float alpha, DNUIcoordinate aX, DNUIcoordinate aY, DNUIcoordinate bX, DNUIcoordinate bY)
+{
+	DNvec2 posA = _DNUI_calc_render_pos({0.0f, 0.0f}, parentSize, size, aX, aY);
+	DNvec2 posB = _DNUI_calc_render_pos({0.0f, 0.0f}, parentSize, size, bX, bY);
+	DNvec2 pos = DN_vec2_lerp(posA, posB, alpha);
+
+	*x = DNUIcoordinate(DNUIcoordinate::PIXELS, pos.x, DNUIcoordinate::CENTER_CENTER);
+	*y = DNUIcoordinate(DNUIcoordinate::PIXELS, pos.y, DNUIcoordinate::CENTER_CENTER);
+}
+
+void _DNUI_lerp_size(DNUIdimension* w, DNUIdimension* h, DNvec2 parentSize, float alpha, DNUIdimension aW, DNUIdimension aH, DNUIdimension bW, DNUIdimension bH)
+{
+	DNvec2 sizeA = _DNUI_calc_render_size(parentSize, aW, aH);
+	DNvec2 sizeB = _DNUI_calc_render_size(parentSize, bW, bH);
+	DNvec2 size = DN_vec2_lerp(sizeA, sizeB, alpha);
+
+	*w = DNUIdimension(DNUIdimension::PIXELS, size.x);
+	*h = DNUIdimension(DNUIdimension::PIXELS, size.y);
+}
+
+float _DNUI_lerp(float a, float b, float alpha)
+{
+	return a + alpha * (b - a);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
+DNUIcoordinate::DNUIcoordinate()
+{
+	type = RELATIVE;
+	relativePos = 1.0f;
+	center = CENTER_CENTER;
+}
+
+DNUIcoordinate::DNUIcoordinate(DNUIcoordinate::Type t, float param, DNUIcoordinate::Center c)
+{
+	type = t;
+	relativePos = param; //all parameters are single floats, so this will apply to all of them
+	center = c;
+};
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
+DNUIdimension::DNUIdimension()
+{
+	type = RELATIVE;
+	relativeSize = 1.0f;
+}
+
+DNUIdimension::DNUIdimension(DNUIdimension::Type t, float param)
+{
+	type = t;
+	relativeSize = param; //all parameters are single floats, so this will apply to all of them
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
+DNUIevent::DNUIevent()
+{
+	type = DNUIevent::NONE;
+}
+
+DNUIevent::DNUIevent(DNUIevent::Type typ)
+{
+	type = typ;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
+
+DNUIanimData::DNUIanimData()
+{
+	a = 0.0f;
+	speed = 1.0f;
+	repeat = false;
+	interpolateType = DNUIanimData::LINEAR;
+}
+
+DNUIanimData::DNUIanimData(float spd, bool rpt, DNUIanimData::InterpolationType interpolateTyp)
+{
+	a = 0.0f;
+	speed = spd;
+	repeat = rpt;
+	interpolateType = interpolateTyp;
+}
+
+float DNUIanimData::update_alpha(float dt)
+{
+	a += dt * speed;
+
+	if(a > 1.0f)
+		a = 1.0f;
+	else if(a < 0.0f)
+		a = 0.0f;
+
+	switch(interpolateType)
+	{
+	case DNUIanimData::QUADRATIC:
+		return 1.0f - (1.0f - a) * (1.0f - a);
+	case DNUIanimData::CUBIC:
+		return 1.0f - (1.0f - a) * (1.0f - a) * (1.0f - a);
+	case DNUIanimData::EXPONENTIAL:
+		return a == 1.0f ? 1.0f : 1.0f - powf(2.0f, -10.0f * a);
+	case DNUIanimData::LINEAR:
+	default:
+		return a;
+	}
+}
+
+void DNUIanimData::reset()
+{
+	a = 0.0f;
+}
+
 //--------------------------------------------------------------------------------------------------------------------------------//
 
 DNUIelement::DNUIelement()
 {
 
-}
-
-DNUIelement::DNUIelement(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h)
-{
-	xPos = x;
-	yPos = y;
-	width = w;
-	height = h;
 }
 
 DNUIelement::~DNUIelement()
@@ -165,32 +229,96 @@ void DNUIelement::handle_event(DNUIevent event)
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
+DNUIbox::AnimState::AnimState()
+{
+	xPos = DNUIcoordinate();
+	yPos = DNUIcoordinate();
+	width  = DNUIdimension();
+	height = DNUIdimension();
+
+	color = {1.0f, 1.0f, 1.0f, 1.0f};
+	angle = 0.0f;
+	cornerRadius = 0.0f;
+}
+
+DNUIbox::AnimState::AnimState(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad, float agl)
+{
+	xPos = x;
+	yPos = y;
+	width  = w;
+	height = h;
+
+	color = col;
+	angle = agl;
+	cornerRadius = cornerRad;
+}
+
+DNUIbox::AnimState DNUIbox::AnimState::lerp(DNUIbox::AnimState a, DNUIbox::AnimState b, float alpha, DNvec2 parentSize)
+{
+	DNUIbox::AnimState res;
+
+	_DNUI_lerp_size(&res.width, &res.height, parentSize, alpha, a.width, a.height, b.width, b.height);
+	_DNUI_lerp_pos(&res.xPos, &res.yPos, parentSize, {res.width.pixelSize, res.height.pixelSize}, alpha, a.xPos, a.yPos, b.xPos, b.yPos);
+
+	res.color = DN_vec4_lerp(a.color, b.color, alpha);
+	res.cornerRadius = _DNUI_lerp(a.cornerRadius, b.cornerRadius, alpha);
+	res.angle = _DNUI_lerp(a.angle, b.angle, alpha);
+
+	return res;
+}
+
 DNUIbox::DNUIbox()
 {
-	color = {1.0f, 1.0f, 1.0f, 1.0f};
-	cornerRadius = 10.0f;
+	currentState = AnimState();
+	targetState = currentState;
+	animData = DNUIanimData();
+
 	texture = -1;
 }
 
-DNUIbox::DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad, int tex) : DNUIelement::DNUIelement(x, y, w, h)
+DNUIbox::DNUIbox(AnimState state, int tex)
 {
-	color = col;
-	cornerRadius = cornerRad;
+	currentState = state;
+	targetState = currentState;
+	animData = DNUIanimData();
+
 	texture = tex;
 }
 
 void DNUIbox::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
-	renderSize = _DNUI_calc_render_size(parentSize, width, height);
-	renderPos = _DNUI_calc_render_pos(parentPos, parentSize, renderSize, xPos, yPos);
+	float a = animData.update_alpha(dt);
+
+	renderState = DNUIbox::AnimState::lerp(currentState, targetState, a, parentSize);
+	renderSize = _DNUI_calc_render_size(parentSize, renderState.width, renderState.height);
+	renderPos = _DNUI_calc_render_pos(parentPos, parentSize, renderSize, renderState.xPos, renderState.yPos);
+
+	if(a >= 1.0f)
+	{
+		animData.reset();
+		if(animData.repeat)
+		{
+			AnimState temp = currentState;
+			currentState = targetState;
+			targetState = temp;
+		}
+		else
+			currentState = targetState;
+	}
 
 	DNUIelement::update(dt, renderPos, renderSize);
 }
 
 void DNUIbox::render()
 {
-	DNUI_draw_rect(texture, renderPos, renderSize, 0.0f, color, cornerRadius);
+	DNUI_draw_rect(texture, renderPos, renderSize, renderState.angle, renderState.color, renderState.cornerRadius);
 	DNUIelement::render();
+}
+
+void DNUIbox::start_anim(DNUIanimData data, AnimState state)
+{
+	animData = data;
+	targetState = state;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -201,7 +329,7 @@ DNUIbutton::DNUIbutton() : DNUIbox::DNUIbox()
 	callbackID = 0;
 }
 
-DNUIbutton::DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, void (*buttonCallback)(int), int id, float cornerRad, int tex) : DNUIbox::DNUIbox(x, y, w, h, col, cornerRad, tex)
+DNUIbutton::DNUIbutton(AnimState state, void (*buttonCallback)(int), int id, int tex) : DNUIbox::DNUIbox(state, tex)
 {
 	button_callback = buttonCallback;
 	callbackID = id;
@@ -250,7 +378,9 @@ void DNUIbutton::handle_event(DNUIevent event)
 
 DNUItext::DNUItext() : DNUIelement::DNUIelement()
 {
-	height = DNUIdimension(DNUIdimension::RELATIVE, 1.0f);
+	xPos = DNUIcoordinate();
+	yPos = DNUIcoordinate();
+	width  = DNUIdimension();
 
 	text = "Hello World!";
 	color = {1.0f, 1.0f, 1.0f};
@@ -270,7 +400,6 @@ DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::
 	xPos = x;
 	yPos = y;
 	width = size;
-	height = DNUIdimension(DNUIdimension::RELATIVE, 1.0f);
 
 	text = txt;
 	color = col;

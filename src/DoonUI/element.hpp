@@ -77,6 +77,35 @@ struct DNUIevent
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------//
+//ANIMATION STRUCT:
+
+//a struct that represents data about an animation
+struct DNUIanimData
+{
+private:
+	float a; //the animation's progress, ranges from 0-1
+
+public:
+	float speed; //how fast the animation plays
+	bool repeat; //whether or not the animation will repeat backwards on completion
+
+	//determines how the animation will be interpolated
+	enum InterpolationType
+	{
+		LINEAR,
+		QUADRATIC,
+		CUBIC,
+		EXPONENTIAL
+	} interpolateType;
+
+	DNUIanimData();
+	DNUIanimData(float speed, bool repeat, DNUIanimData::InterpolationType interpolateType);
+
+	float update_alpha(float dt);
+	void reset();
+};
+
+//--------------------------------------------------------------------------------------------------------------------------------//
 //ELEMENT CLASS:
 
 //a generic UI element, has no functionality on its own other than to update/render child elements
@@ -85,19 +114,7 @@ class DNUIelement
 public:
 	std::vector<DNUIelement*> children;
 
-	DNUIcoordinate xPos;
-	DNUIcoordinate yPos;
-
-	DNUIdimension width;
-	DNUIdimension height;
-
 	DNUIelement();
-	/* @param x the x position of the element
-	 * @param y the y position of the element
-	 * @param w the width of the element
-	 * @param h the height of the element
-	 */
-	DNUIelement(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h);
 	//deletes all child elements, do NOT delete child elements yourself
 	~DNUIelement();
 
@@ -115,28 +132,46 @@ public:
 //a simple rectangle
 class DNUIbox : public DNUIelement
 {
+public:
+	struct AnimState
+	{
+		DNUIcoordinate xPos;  //the x position of the box
+		DNUIcoordinate yPos;  //the y position of the box
+		DNUIdimension width;  //the width of the box
+		DNUIdimension height; //the height of the box
+
+		DNvec4 color;		//the box's color
+		float cornerRadius; //the radius of the box's corners, in pixels
+		float angle;		//the rotation of the box, in degrees
+
+		AnimState();
+		AnimState(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad = 0.0f, float angle = 0.0f);
+
+		//linearly interpolates between two animation states
+		static AnimState lerp(AnimState a, AnimState b, float alpha, DNvec2 parentSize);
+	};
+
 protected:
 	DNvec2 renderPos;  //the final position of the box's center, in pixels
 	DNvec2 renderSize; //the final size of the box, in pixels
 
+	AnimState renderState; //the final animation state of the box
+
 public:
-	DNvec4 color;		//the box's color
-	float cornerRadius; //the radius of the box's corners, in pixels
-	int texture;		//the openGL texture handle to use when rendering, or -1 if no texture is desired
+	AnimState currentState; //the box's "base state" (not necessarily how it is currently rendered, see renderState)
+	AnimState targetState;  //the box's "target state"
+	DNUIanimData animData;  //how the box will interpolate between the two states
+
+	int texture; //the openGL texture handle to use when rendering, or -1 if no texture is desired
 
 	DNUIbox();
-	/* @param x the x position of the box
-	 * @param y the y position of the box
-	 * @param w the width of the box
-	 * @param h the height of the box
-	 * @param color the color of the box
-	 * @param cornerRad the radius of the box's corners, in pixels
-	 * @param tex the openGL texture handle to use when rendering, or -1 if no texture is desired
-	 */
-	DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad = 0.0f, int tex = -1);
+	DNUIbox(AnimState state, int tex = -1);
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void render();
+
+	//sets the target state and the anim data, beginning an animation
+	void start_anim(DNUIanimData data, AnimState state);
 };
 
 //a button that calls a user-defined function when clicked
@@ -151,17 +186,7 @@ public:
 	int callbackID;				  //the unique id that gets passed to the callback function, used to differentiate buttons that have the same callback func
 
 	DNUIbutton();
-	/* @param x the x position of the box
-	 * @param y the y position of the box
-	 * @param w the width of the box
-	 * @param h the height of the box
-	 * @param color the color of the box
-	 * @param buttonCallback the function that gets called when this button is clicked
-	 * @param callbackID the value that gets passed to the callback function, can be used to identify buttons that use the same callback func
-	 * @param cornerRad the radius of the box's corners, in pixels
-	 * @param tex the openGL texture handle to use when rendering, or -1 if no texture is desired
-	 */
-	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 color, void (*buttonCallback)(int), int callbackID = 0, float cornerRad = 0.0f, int tex = -1);
+	DNUIbutton(AnimState state, void (*buttonCallback)(int), int callbackID = 0, int tex = -1);
 
 	/* Call whenever the cursor position or the state of the mouse button changes, will NOT invoke any of the button callback functions, for that, a DNUIevent must be sent
 	 * @param pos the mouse's screen position, with {0, 0} denoting the center of the screen
@@ -182,6 +207,9 @@ private:
 	float renderW;	   //the final maximum line width of the text, in pixels
 
 public:
+	DNUIcoordinate xPos;
+	DNUIcoordinate yPos;
+	DNUIdimension width;
 
 	//text parameters:
 	std::string text;		//the text to render
@@ -193,27 +221,12 @@ public:
 	float thickness;	    //the thickness of the text
 	float softness;			//the softness of the text's edges
 
-	//outline parameters
+	//outline parameters:
 	DNvec4 outlineColor; 	//the color of the text's outline
 	float outlineThickness; //the thickness at which the text's outline begins
 	float outlineSoftness;  //the softness of the outline's edges
 
 	DNUItext();
-	/* @param x the x position of the element
-	 * @param y the y position of the element
-	 * @param size the width of the element, the height is determined automatically to avoid stretching
-	 * @param text the text to render
-	 * @param font the handle to the font to render with
-	 * @param color the color of the text
-	 * @param scale the scale of the text, or -1 to allow for automatic scaling (otherwise the lineWrap will be changed and scale will remain constant)
-	 * @param lineWrap the maximum number of pixels the text can extend before wrapping. Set to 0.0 if no wrapping is desired
-	 * @param align how to align the text when wrapping: 0 = align left (all lines start at left side), 1 = align right (all lines end at right side), 2 = align center (all lines are individually centered)
-	 * @param thickness the thickness of the text
-	 * @param softness the softness of the text's edges
-	 * @param outlineColor the color of the text's outline
-	 * @param outlineThickness the thickness at which the text's outline begins, set to 1.0 if no outline is desired
-	 * @param outlineSoftness the softness of the outline's edges
-	 */
 	DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string text, int font, DNvec4 color = {1.0f, 1.0f, 1.0f, 0.0f}, float scale = 1.0f, float lineWrap = 0.0f, int align = 0, float thickness = 0.5f, float softness = 0.05f, DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 0.0f}, float outlineThickness = 1.0f, float outlineSoftness = 0.05f);
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);

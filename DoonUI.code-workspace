@@ -28,7 +28,8 @@
 			"iosfwd": "c",
 			"iterator": "c",
 			"streambuf": "c",
-			"xlocale": "c"
+			"xlocale": "c",
+			"xiosbase": "cpp"
 		}
 	}
 }
