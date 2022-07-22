@@ -72,19 +72,19 @@ int main()
 	int arialFont = DNUI_load_font("arial.ttf", 72);
 
 	DNUItransition baseTest = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
-	baseTest.add_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.5f));
-	baseTest.add_target_color({1.0f, 0.0f, 0.0f, 1.0f});
-	baseTest.add_target_float(20.0f, offsetof(DNUIbutton, cornerRadius));
+	baseTest.set_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.5f));
+	baseTest.set_target_vec4({1.0f, 0.0f, 0.0f, 1.0f}, offsetof(DNUIbutton, color));
+	baseTest.set_target_float(20.0f, offsetof(DNUIbutton, cornerRadius));
 
 	DNUItransition hoverTest = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
-	hoverTest.add_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.55f));
-	hoverTest.add_target_color({0.0f, 1.0f, 0.0f, 1.0f});
-	hoverTest.add_target_float(0.0f, offsetof(DNUIbutton, cornerRadius));
+	hoverTest.set_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.55f));
+	hoverTest.set_target_vec4({0.0f, 1.0f, 0.0f, 1.0f}, offsetof(DNUIbutton, color));
+	hoverTest.set_target_float(0.0f, offsetof(DNUIbutton, cornerRadius));
 
 	DNUItransition holdTest = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
-	holdTest.add_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.525f));
-	holdTest.add_target_color({0.0f, 0.0f, 1.0f, 1.0f});
-	holdTest.add_target_float(10.0f, offsetof(DNUIbutton, cornerRadius));
+	holdTest.set_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.525f));
+	holdTest.set_target_vec4({0.0f, 0.0f, 1.0f, 1.0f}, offsetof(DNUIbutton, color));
+	holdTest.set_target_float(10.0f, offsetof(DNUIbutton, cornerRadius));
 
 	DNUIbutton testBox = DNUIbutton(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, nullptr, 0, 20.0f, -1, baseTest, hoverTest, holdTest);
 	
@@ -119,7 +119,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		testBox.update(deltaTime, {0.0f, 0.0f}, {(float)windowSize.x, (float)windowSize.y});
-		testBox.render();
+		testBox.render(1.0f);
 		//DNUI_draw_rect(-1, {0, 720 / 2}, {w * 2, 600}, 0.0f, {1.0, 1.0, 0.0, 1.0}, 30);
 		//DNUI_draw_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean et arcu metus. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam vitae nulla vitae neque lacinia sollicitudin ac ut ipsum. Phasellus leo quam, lobortis ac tincidunt a, molestie non eros. Nulla ultrices fermentum justo, a porta nisl. Vivamus bibendum tempus augue, non aliquam quam dapibus in.", arialFont, {0, 0}, 0.5f, 500, 2, {1.0f, 1.0f, 1.0f, 1.0f}, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
 		//DNUI_draw_string("Hello world!", arialFont, {100, 350}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.55f, 0.05f, {1.0f, 0.0f, 0.0f, 1.0f}, 0.45f, 0.05f);

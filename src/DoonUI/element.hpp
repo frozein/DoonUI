@@ -26,10 +26,9 @@ public:
 	DNUIcoordinate yPos;
 	DNUIdimension width;
 	DNUIdimension height;
-	DNvec4 color;
-	float alphaMult;
+	float alphaMult = 1.0f;
 
-	DNUIelement();
+	DNUIelement() = default;
 	DNUIelement(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h);
 	//deletes all child elements, do NOT delete child elements yourself
 	~DNUIelement();
@@ -37,7 +36,7 @@ public:
 	//calls update() on all child elements and updates the transition, can be overriden
 	virtual void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	//calls render() on all child elements, can be overriden
-	virtual void render();
+	virtual void render(float parentAlphaMult);
 	//calls handle_event() on all child elements, can be overriden
 	virtual void handle_event(DNUIevent event);
 
@@ -52,14 +51,15 @@ public:
 class DNUIbox : public DNUIelement
 {
 public:
-	float cornerRadius; //the radius of the box's corners, in pixels
-	int texture;		//the openGL texture handle to use when rendering, or -1 if no texture is desired
+	DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}; //the box's color
+	float cornerRadius = 0.0f;				 //the radius of the box's corners, in pixels
+	int texture = -1;						 //the openGL texture handle to use when rendering, or -1 if no texture is desired
 
-	DNUIbox();
+	DNUIbox() = default;
 	DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad = 0.0f, int tex = -1);
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
-	void render();
+	void render(float parentAlphaMult);
 };
 
 //a button that calls a user-defined function when clicked
@@ -69,17 +69,17 @@ private:
 	inline static DNvec2 mousePos;  //the mouse's current screen position
 	inline static bool mousePressed; //whether or not the mouse button is held down
 
-	int curState; //0 = not hovered, 1 = hovered, 2 = held
+	int curState = 0; //0 = not hovered, 1 = hovered, 2 = held
 
 public:
-	void (*button_callback)(int); //the function that gets called when the button is clicked
-	int callbackID;				  //the unique id that gets passed to the callback function, used to differentiate buttons that have the same callback func
+	void (*button_callback)(int) = nullptr; //the function that gets called when the button is clicked
+	int callbackID = 0;						//the unique id that gets passed to the callback function, used to differentiate buttons that have the same callback func
 
 	DNUItransition baseTransition;  //the base transition state of the button. NOTE: if the position/size/etc of the button is changed, the base transition should also be changed to reflect this
 	DNUItransition hoverTransition; //the transition that plays when the button is hovered
 	DNUItransition holdTransition;  //the transition that plays when the button is held down
 
-	DNUIbutton();
+	DNUIbutton() = default;
 	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 color, void (*buttonCallback)(int), int callbackID = 0, float cornerRad = 0.0f, int tex = -1, DNUItransition base = DNUItransition(), DNUItransition hover = DNUItransition(), DNUItransition hold = DNUItransition());
 
 	/* Call whenever the cursor position or the state of the mouse button changes, will NOT invoke any of the button callback functions, for that, a DNUIevent must be sent
@@ -101,24 +101,25 @@ private:
 
 public:
 	//text parameters:
-	std::string text;		//the text to render
-	int font;				//the handle to the font to render with
-	float scale;			//the scale of the text, or -1 for automatic scaling
-	float lineWrap; 		//the maximum number of pixels the text can extend before wrapping, to 0.0 if no wrapping is desired
-	int align; 				//how to align the text when wrapping: 0 = align left, 1 = align right, 2 = align center
-	float thickness;	    //the thickness of the text
-	float softness;			//the softness of the text's edges
+	std::string text;						 //the text to render
+	int font = -1;							 //the handle to the font to render with
+	DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}; //the text's color
+	float scale = 1.0f;						 //the scale of the text, or -1 for automatic scaling
+	float lineWrap = 0.0f;					 //the maximum number of pixels the text can extend before wrapping, to 0.0 if no wrapping is desired
+	int align = 0;							 //how to align the text when wrapping: 0 = align left, 1 = align right, 2 = align center
+	float thickness = 0.5f;					 //the thickness of the text
+	float softness = 0.05f;					 //the softness of the text's edges
 
 	//outline parameters:
-	DNvec4 outlineColor; 	//the color of the text's outline
-	float outlineThickness; //the thickness at which the text's outline begins
-	float outlineSoftness;  //the softness of the outline's edges
+	DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 1.0f}; //the color of the text's outline
+	float outlineThickness = 1.0f;					//the thickness at which the text's outline begins
+	float outlineSoftness = 0.05f;					//the softness of the outline's edges
 
-	DNUItext();
+	DNUItext() = default;
 	DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string text, int font, DNvec4 color = {1.0f, 1.0f, 1.0f, 0.0f}, float scale = 1.0f, float lineWrap = 0.0f, int align = 0, float thickness = 0.5f, float softness = 0.05f, DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 0.0f}, float outlineThickness = 1.0f, float outlineSoftness = 0.05f);
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
-	void render();
+	void render(float parentAlphaMult);
 };
 
 #endif

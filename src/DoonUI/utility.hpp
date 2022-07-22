@@ -15,7 +15,7 @@ struct DNUIcoordinate
 	{
 		RELATIVE, //the element will be positioned relative to its parent's size. For example, a relativePos of 0.5 would place the element in the center of its parent
 		PIXELS	  //the element will be positioned relative to its parent's center, min, or max (depending on what center is set to), being offset by pixelPos pixels
-	} type;
+	} type = RELATIVE;
 
 	//determines at what point the element will be centered
 	enum Center
@@ -23,15 +23,15 @@ struct DNUIcoordinate
 		CENTER_MIN,	   //the element will be positioned centered at its minimum coordinate
 		CENTER_CENTER, //the element will be positioned centered at its center
 		CENTER_MAX	   //the element will be positioned centered at its maximum coordinate
-	} center;
+	} center = CENTER_CENTER;
 
 	union
 	{
-		float relativePos;
+		float relativePos = 0.5f;
 		float pixelPos;
 	};
 
-	DNUIcoordinate();
+	DNUIcoordinate() = default;
 	DNUIcoordinate(DNUIcoordinate::Type type, float param, DNUIcoordinate::Center center);
 
 	//returns the position relative to the screen, in pixels
@@ -47,17 +47,17 @@ struct DNUIdimension
 		PIXELS,	  //the element will have a fixed pixel size
 		ASPECT,	  //the element's size will be relative to its size in the other dimension
 		SPACE	  //the element will be sized such that it takes up emptyPixels fewer pixels that it's parent does
-	} type;
+	} type = RELATIVE;
 
 	union
 	{
-		float relativeSize;
+		float relativeSize = 1.0f;
 		float pixelSize;
 		float aspectRatio;
 		float emptyPixels;
 	};
 
-	DNUIdimension();
+	DNUIdimension() = default;
 	DNUIdimension(DNUIdimension::Type type, float param);
 
 	//returns the size, in pixels
@@ -73,11 +73,11 @@ struct DNUIevent
 	{
 		NONE,
 		MOUSE_RELEASE
-	} type;
+	} type = NONE;
 
 	//data here
 
-	DNUIevent();
+	DNUIevent() = default;
 	DNUIevent(DNUIevent::Type type);
 };
 
@@ -150,6 +150,9 @@ private:
 	float alpha = 0.0f;
 	float delay = 0.0f;
 
+	//returns the index of the specified component, will push_back the vector and return the new index if an existing component was not found
+	int get_component(Component::DataType type, size_t offset);
+
 public:
 	float time = 1000.0f; //how long the transition will take, in milliseconds
 
@@ -162,28 +165,28 @@ public:
 		EXPONENTIAL
 	} interpolateType = LINEAR;
 
-	DNUItransition();
+	DNUItransition() = default;
 	DNUItransition(float time, InterpolationType interpolate);
 
 	//sets the target x position
-	void add_target_x(DNUIcoordinate x);
+	void set_target_x(DNUIcoordinate x);
 	//sets the target y position
-	void add_target_y(DNUIcoordinate y);
+	void set_target_y(DNUIcoordinate y);
 	//sets the target width
-	void add_target_w(DNUIdimension  w); //TODO: FIX ISSUES WITH ASPECT RATIO
+	void set_target_w(DNUIdimension  w);
 	//sets the target height
-	void add_target_h(DNUIdimension  h);
-	//sets the target color
-	void add_target_color(DNvec4 col);
+	void set_target_h(DNUIdimension  h);
+	//sets the target alpha multiplier
+	void set_target_alphamult(float a);
 
 	//sets a target float value, use offsetof to determine the offset
-	void add_target_float(float target, size_t offset);
+	void set_target_float(float target, size_t offset);
 	//sets a target vec2 value, use offsetof to determine the offset
-	void add_target_vec2(DNvec2 target, size_t offset);
+	void set_target_vec2(DNvec2 target, size_t offset);
 	//sets a target vec3 value, use offsetof to determine the offset
-	void add_target_vec3(DNvec3 target, size_t offset);
+	void set_target_vec3(DNvec3 target, size_t offset);
 	//sets a target vec4 value, use offsetof to determine the offset
-	void add_target_vec4(DNvec4 target, size_t offset);
+	void set_target_vec4(DNvec4 target, size_t offset);
 
 	//initializes the transition, call before calling update(). the animation will begin after delay() milliseconds
 	void init(DNUIelement* element, float delay);

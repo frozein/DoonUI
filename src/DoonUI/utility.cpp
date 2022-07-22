@@ -7,13 +7,6 @@ extern "C"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUIcoordinate::DNUIcoordinate()
-{
-	type = RELATIVE;
-	relativePos = 1.0f;
-	center = CENTER_CENTER;
-}
-
 DNUIcoordinate::DNUIcoordinate(DNUIcoordinate::Type t, float param, DNUIcoordinate::Center c)
 {
 	type = t;
@@ -59,12 +52,6 @@ float DNUIcoordinate::calc_render_pos(float parentPos, float parentSize, float s
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUIdimension::DNUIdimension()
-{
-	type = RELATIVE;
-	relativeSize = 1.0f;
-}
-
 DNUIdimension::DNUIdimension(DNUIdimension::Type t, float param)
 {
 	type = t;
@@ -88,11 +75,6 @@ float DNUIdimension::calc_render_size(float parentSize)
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUIevent::DNUIevent()
-{
-	type = DNUIevent::NONE;
-}
-
 DNUIevent::DNUIevent(DNUIevent::Type typ)
 {
 	type = typ;
@@ -100,104 +82,88 @@ DNUIevent::DNUIevent(DNUIevent::Type typ)
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUItransition::DNUItransition()
-{
-
-}
-
 DNUItransition::DNUItransition(float t, InterpolationType i)
 {
 	time = t;
 	interpolateType = i;
 }
 
-void DNUItransition::add_target_x(DNUIcoordinate x)
+int DNUItransition::get_component(DNUItransition::Component::DataType type, size_t offset)
 {
-	DNUItransition::Component comp = {};
-	comp.type = DNUItransition::Component::COORDINATE;
-	comp.offset = offsetof(DNUIelement, xPos);
-	comp.coordinate.target = x;
-	comp.coordinate.x = true;
+	int index = -1;
+	for(int i = 0; i < components.size(); i++)
+		if(components[i].offset == offset && components[i].type == type)
+		{
+			index = i;
+			break;
+		}
 
-	components.push_back(comp);
+	if(index < 0)
+	{
+		index = components.size();
+		components.push_back({});
+	}
+
+	components[index].type = type;
+	components[index].offset = offset;
+	return index;
 }
 
-void DNUItransition::add_target_y(DNUIcoordinate y)
+void DNUItransition::set_target_x(DNUIcoordinate x)
 {
-	DNUItransition::Component comp = {};
-	comp.type = DNUItransition::Component::COORDINATE;
-	comp.offset = offsetof(DNUIelement, yPos);
-	comp.coordinate.target = y;
-	comp.coordinate.x = false;
-
-	components.push_back(comp);
+	int i = get_component(DNUItransition::Component::COORDINATE, offsetof(DNUIelement, xPos));
+	components[i].coordinate.target = x;
+	components[i].coordinate.x = true;
 }
 
-void DNUItransition::add_target_w(DNUIdimension w)
+void DNUItransition::set_target_y(DNUIcoordinate y)
 {
-	DNUItransition::Component comp = {};
-	comp.type = DNUItransition::Component::DIMENSION;
-	comp.offset = offsetof(DNUIelement, width);
-	comp.dimension.target = w;
-	comp.dimension.w = true;
-	
-	components.push_back(comp);
+	int i = get_component(DNUItransition::Component::COORDINATE, offsetof(DNUIelement, yPos));
+	components[i].coordinate.target = y;
+	components[i].coordinate.x = false;
 }
 
-void DNUItransition::add_target_h(DNUIdimension h)
+void DNUItransition::set_target_w(DNUIdimension w)
 {
-	DNUItransition::Component comp = {};
-	comp.type = DNUItransition::Component::DIMENSION;
-	comp.offset = offsetof(DNUIelement, height);
-	comp.dimension.target = h;
-	comp.dimension.w = false;
-	
-	components.push_back(comp);
+	int i = get_component(DNUItransition::Component::DIMENSION, offsetof(DNUIelement, width));
+	components[i].dimension.target = w;
+	components[i].dimension.w = true;
 }
 
-void DNUItransition::add_target_color(DNvec4 col)
+void DNUItransition::set_target_h(DNUIdimension h)
 {
-	add_target_vec4(col, offsetof(DNUIelement, color));
+	int i = get_component(DNUItransition::Component::DIMENSION, offsetof(DNUIelement, height));
+	components[i].dimension.target = h;
+	components[i].dimension.w = false;
 }
 
-void DNUItransition::add_target_float(float target, size_t offset)
+void DNUItransition::set_target_alphamult(float a)
 {
-	DNUItransition::Component comp = {};
-	comp.type = DNUItransition::Component::FLOAT;
-	comp.offset = offset;
-	comp.floating.target = target;
-
-	components.push_back(comp);
+	set_target_float(a, offsetof(DNUIelement, alphaMult));
 }
 
-void DNUItransition::add_target_vec2(DNvec2 target, size_t offset)
+void DNUItransition::set_target_float(float target, size_t offset)
 {
-	DNUItransition::Component comp = {};
-	comp.type = DNUItransition::Component::VEC2;
-	comp.offset = offset;
-	comp.vector2.target = target;
-
-	components.push_back(comp);
+	int i = get_component(DNUItransition::Component::FLOAT, offset);
+	components[i].floating.target = target;
 }
 
-void DNUItransition::add_target_vec3(DNvec3 target, size_t offset)
+void DNUItransition::set_target_vec2(DNvec2 target, size_t offset)
 {
-	DNUItransition::Component comp = {};
-	comp.type = DNUItransition::Component::VEC3;
-	comp.offset = offset;
-	comp.vector3.target = target;
-
-	components.push_back(comp);
+	int i = get_component(DNUItransition::Component::VEC2, offset);
+	components[i].vector2.target = target;
 }
 
-void DNUItransition::add_target_vec4(DNvec4 target, size_t offset)
+void DNUItransition::set_target_vec3(DNvec3 target, size_t offset)
 {
-	DNUItransition::Component comp = {};
-	comp.type = DNUItransition::Component::VEC4;
-	comp.offset = offset;
-	comp.vector4.target = target;
+	int i = get_component(DNUItransition::Component::VEC3, offset);
+	components[i].vector3.target = target;
+}
 
-	components.push_back(comp);
+void DNUItransition::set_target_vec4(DNvec4 target, size_t offset)
+{
+	int i = get_component(DNUItransition::Component::VEC4, offset);
+	components[i].vector4.target = target;
 }
 
 void DNUItransition::init(DNUIelement* element, float d)
@@ -212,35 +178,23 @@ void DNUItransition::init(DNUIelement* element, float d)
 		switch(comp.type)
 		{
 		case DNUItransition::Component::COORDINATE:
-		{
 			components[i].coordinate.original = *(DNUIcoordinate*)ptr;
 			break;
-		}
 		case DNUItransition::Component::DIMENSION:
-		{
 			components[i].dimension.original = *(DNUIdimension*)ptr;
 			break;
-		}
 		case DNUItransition::Component::FLOAT:
-		{
 			components[i].floating.original = *(float*)ptr;
 			break;
-		}
 		case DNUItransition::Component::VEC2:
-		{
 			components[i].vector2.original = *(DNvec2*)ptr;
 			break;
-		}
 		case DNUItransition::Component::VEC3:
-		{
 			components[i].vector3.original = *(DNvec3*)ptr;
 			break;
-		}
 		case DNUItransition::Component::VEC4:
-		{
 			components[i].vector4.original = *(DNvec4*)ptr;
 			break;
-		}
 		default:
 			break;
 		}
