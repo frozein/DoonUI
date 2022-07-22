@@ -63,21 +63,21 @@ bool DNUI_init(unsigned int windowW, unsigned int windowH)
 {
 	//load shader programs:
 	//---------------------------------
-	if(!_DNUI_load_shader_program("shaders/rect.vert", "shaders/rect.frag", &rectProgram))
+	if(!_DNUI_load_shader_program("shaders/vertex.vert", "shaders/rect.frag", &rectProgram))
 		return false;
 	
-	if(!_DNUI_load_shader_program("shaders/text.vert", "shaders/text.frag", &textProgram))
+	if(!_DNUI_load_shader_program("shaders/vertex.vert", "shaders/text.frag", &textProgram))
 		return false;
 
 	//create rect vertex buffer:
 	//---------------------------------
 	float quadVertices[] = {
-     	 1.0f,  1.0f,
-     	 1.0f, -1.0f,
-    	-1.0f, -1.0f,
-    	-1.0f, -1.0f,
-    	 1.0f,  1.0f,
-    	-1.0f,  1.0f
+     	 1.0f,  1.0f, 1.0f, 1.0f,
+     	 1.0f, -1.0f, 1.0f, 0.0f,
+    	-1.0f, -1.0f, 0.0f, 0.0f,
+    	-1.0f, -1.0f, 0.0f, 0.0f,
+    	 1.0f,  1.0f, 1.0f, 1.0f,
+    	-1.0f,  1.0f, 0.0f, 1.0f
 	};
 
 	glGenVertexArrays(1, &rectArray);
@@ -87,8 +87,10 @@ bool DNUI_init(unsigned int windowW, unsigned int windowH)
 	glBindBuffer(GL_ARRAY_BUFFER, rectBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2, (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4, (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4, (void*)(sizeof(GLfloat) * 2));
+	glEnableVertexAttribArray(1);
 
 	//create text vertex buffer:
 	//---------------------------------
@@ -370,7 +372,7 @@ void _DNUI_draw_string_line(const char* text, int font, DNvec2 pos, float scale,
 	glUseProgram(textProgram);
 	glUniform4fv(glGetUniformLocation(textProgram, "color"), 1, (GLfloat*)&color);
 	glUniform4fv(glGetUniformLocation(textProgram, "outlineColor"), 1, (GLfloat*)&outlineColor);
-	glUniformMatrix3fv(glGetUniformLocation(textProgram, "projection"), 1, GL_FALSE, (GLfloat*)&projectionMat);
+	glUniformMatrix3fv(glGetUniformLocation(textProgram, "modelProjection"), 1, GL_FALSE, (GLfloat*)&projectionMat);
 	glUniform1i(glGetUniformLocation(textProgram, "textureAtlas"), 0);
 	glUniform1f(glGetUniformLocation(textProgram, "scale"), scale);
 	glUniform1f(glGetUniformLocation(textProgram, "thickness"), 1.0 - thickness);
@@ -479,7 +481,7 @@ void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, 
 
 	glUseProgram(rectProgram);
 
-	glUniformMatrix3fv(glGetUniformLocation(rectProgram, "model"), 1, GL_FALSE, (GLfloat*)&model);
+	glUniformMatrix3fv(glGetUniformLocation(rectProgram, "modelProjection"), 1, GL_FALSE, (GLfloat*)&model);
 	glUniform4fv(glGetUniformLocation(rectProgram, "color"), 1, (GLfloat*)&color);
 	glUniform2fv(glGetUniformLocation(rectProgram, "size"), 1, (GLfloat*)&size);
 	glUniform1f(glGetUniformLocation(rectProgram, "cornerRad"), cornerRad);

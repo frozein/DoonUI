@@ -18,35 +18,11 @@ void main()
 	if(useTex)
 		finalColor = vec4(1.0, 1.0, 1.0, texture(tex, texCoord).r);
 
-	//see if pixel is in corner:
+	//check distance (from https://iquilezles.org/articles/distfunctions2d/):
 	//---------------------------------
-	vec2 pixelPos = texCoord * size;
-	vec2 cornerPos;
-	bool testCorner = true;
-	
-	if(pixelPos.x < cornerRad)
-		cornerPos.x = cornerRad;
-	else if(pixelPos.x > size.x - cornerRad)
-		cornerPos.x = size.x - cornerRad;
-	else
-		testCorner = false;
-
-	if(pixelPos.y < cornerRad)
-		cornerPos.y = cornerRad;
-	else if(pixelPos.y > size.y - cornerRad)
-		cornerPos.y = size.y - cornerRad;
-	else
-		testCorner = false;
-
-	//test if pixel is within radius:
-	//---------------------------------
-	if(testCorner)
-	{
-		float dist = distance(pixelPos, cornerPos) - cornerRad;
-		float mult = smoothstep(1.0, -1.0, dist);
-
-		finalColor.a *= mult;
-	}
+	vec2 d = abs((texCoord - 0.5) * size) - (size * 0.5 - cornerRad);
+	float dist = length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - cornerRad;
+	finalColor.a *= smoothstep(1.0, -1.0, dist);
 
 	//return:
 	//---------------------------------
