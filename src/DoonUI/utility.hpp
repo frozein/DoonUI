@@ -170,7 +170,7 @@ public:
 	//sets the target y position
 	void add_target_y(DNUIcoordinate y);
 	//sets the target width
-	void add_target_w(DNUIdimension  w);
+	void add_target_w(DNUIdimension  w); //TODO: FIX ISSUES WITH ASPECT RATIO
 	//sets the target height
 	void add_target_h(DNUIdimension  h);
 	//sets the target color

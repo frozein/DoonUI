@@ -69,12 +69,18 @@ private:
 	inline static DNvec2 mousePos;  //the mouse's current screen position
 	inline static bool mousePressed; //whether or not the mouse button is held down
 
+	int curState; //0 = not hovered, 1 = hovered, 2 = held
+
 public:
 	void (*button_callback)(int); //the function that gets called when the button is clicked
 	int callbackID;				  //the unique id that gets passed to the callback function, used to differentiate buttons that have the same callback func
 
+	DNUItransition baseTransition;  //the base transition state of the button. NOTE: if the position/size/etc of the button is changed, the base transition should also be changed to reflect this
+	DNUItransition hoverTransition; //the transition that plays when the button is hovered
+	DNUItransition holdTransition;  //the transition that plays when the button is held down
+
 	DNUIbutton();
-	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 color, void (*buttonCallback)(int), int callbackID = 0, float cornerRad = 0.0f, int tex = -1);
+	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 color, void (*buttonCallback)(int), int callbackID = 0, float cornerRad = 0.0f, int tex = -1, DNUItransition base = DNUItransition(), DNUItransition hover = DNUItransition(), DNUItransition hold = DNUItransition());
 
 	/* Call whenever the cursor position or the state of the mouse button changes, will NOT invoke any of the button callback functions, for that, a DNUIevent must be sent
 	 * @param pos the mouse's screen position, with {0, 0} denoting the center of the screen
@@ -94,7 +100,6 @@ private:
 	float renderW;	   //the final maximum line width of the text, in pixels
 
 public:
-
 	//text parameters:
 	std::string text;		//the text to render
 	int font;				//the handle to the font to render with

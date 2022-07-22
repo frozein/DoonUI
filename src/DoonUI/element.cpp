@@ -116,12 +116,23 @@ DNUIbutton::DNUIbutton() : DNUIbox::DNUIbox()
 {
 	button_callback = nullptr;
 	callbackID = 0;
+
+	baseTransition = DNUItransition();
+	baseTransition.add_target_x(xPos);
+	baseTransition.add_target_y(yPos);
+	baseTransition.add_target_w(width);
+	baseTransition.add_target_h(height);
+	baseTransition.add_target_color(color);
+	baseTransition.add_target_float(cornerRadius, offsetof(DNUIbutton, cornerRadius));
 }
 
-DNUIbutton::DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, void (*buttonCallback)(int), int id, float cornerRad, int tex) : DNUIbox::DNUIbox(x, y, w, h, col, cornerRad, tex)
+DNUIbutton::DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, void (*buttonCallback)(int), int id, float cornerRad, int tex, DNUItransition base, DNUItransition hover, DNUItransition hold) : DNUIbox::DNUIbox(x, y, w, h, col, cornerRad, tex)
 {
 	button_callback = buttonCallback;
 	callbackID = id;
+	baseTransition = base;
+	hoverTransition = hover;
+	holdTransition = hold;
 }
 
 void DNUIbutton::set_mouse_state(DNvec2 pos, bool pressed)
@@ -137,16 +148,25 @@ void DNUIbutton::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 	{
 		if(mousePressed)
 		{
-			//pressed anim state
+			if(curState != 2)
+			{
+				curState = 2;
+				set_transition(holdTransition, 0.0f);
+			}
 		}
 		else
 		{
-			//hovered anim state
+			if(curState != 1)
+			{
+				curState = 1;
+				set_transition(hoverTransition, 0.0f);
+			}
 		}
 	}
-	else
+	else if(curState != 0)
 	{
-		//base anim state
+		curState = 0;
+		set_transition(baseTransition, 0.0f);
 	}
 
 	DNUIbox::update(dt, parentPos, parentSize);

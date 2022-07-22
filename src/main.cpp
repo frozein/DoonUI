@@ -71,7 +71,22 @@ int main()
 	DNUI_init(windowSize.x, windowSize.y);
 	int arialFont = DNUI_load_font("arial.ttf", 72);
 
-	DNUIbutton testBox = DNUIbutton(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, nullptr, 0, 20.0f, -1);
+	DNUItransition baseTest = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
+	baseTest.add_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.5f));
+	baseTest.add_target_color({1.0f, 0.0f, 0.0f, 1.0f});
+	baseTest.add_target_float(20.0f, offsetof(DNUIbutton, cornerRadius));
+
+	DNUItransition hoverTest = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
+	hoverTest.add_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.55f));
+	hoverTest.add_target_color({0.0f, 1.0f, 0.0f, 1.0f});
+	hoverTest.add_target_float(0.0f, offsetof(DNUIbutton, cornerRadius));
+
+	DNUItransition holdTest = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
+	holdTest.add_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.525f));
+	holdTest.add_target_color({0.0f, 0.0f, 1.0f, 1.0f});
+	holdTest.add_target_float(10.0f, offsetof(DNUIbutton, cornerRadius));
+
+	DNUIbutton testBox = DNUIbutton(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, nullptr, 0, 20.0f, -1, baseTest, hoverTest, holdTest);
 	
 	DNUItext* testText = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 
 	DNUIdimension(DNUIdimension::RELATIVE, 0.45f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 300.0f);
@@ -82,14 +97,7 @@ int main()
 	testBox.children.push_back((DNUIelement*)testText);
 	testBox.children.push_back((DNUIelement*)testText2);
 
-	DNUItransition testTransition = DNUItransition(1000.0f, DNUItransition::EXPONENTIAL);
-	testTransition.add_target_x(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.0f, DNUIcoordinate::CENTER_CENTER));
-	testTransition.add_target_w(DNUIdimension(DNUIdimension::ASPECT, 1.0f));
-	testTransition.add_target_h(DNUIdimension(DNUIdimension::RELATIVE, 0.5f));
-	testTransition.add_target_color({0.0f, 1.0f, 0.0f, 1.0f});
-	testTransition.add_target_float(0.0f, offsetof(DNUIbutton, cornerRadius));
-
-	testBox.set_transition(testTransition, 0.0f);
+	//testBox.set_transition(testTransition, 0.0f);
 
 	baseElement = &testBox;
 
@@ -105,7 +113,7 @@ int main()
 
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
-		DNUIbutton::set_mouse_state({(float)mouseX - windowSize.x * 0.5f, (float)mouseY - windowSize.y * 0.5f}, glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS);
+		DNUIbutton::set_mouse_state({(float)mouseX - windowSize.x * 0.5f, (float)mouseY - windowSize.y * 0.5f}, glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
 
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
