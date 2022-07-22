@@ -23,6 +23,7 @@
 				"/Tc${workspaceFolder}\\DoonUI\\math\\quaternion.c",
 				"/Tc${workspaceFolder}\\DoonUI\\render.c",
 				"/Tp${workspaceFolder}\\DoonUI\\element.cpp",
+				"/Tp${workspaceFolder}\\DoonUI\\utility.cpp",
 
 				"${workspaceFolder}\\*.cpp", //source files
 
