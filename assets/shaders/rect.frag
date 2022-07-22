@@ -16,7 +16,7 @@ void main()
 	//---------------------------------
 	vec4 finalColor = color;
 	if(useTex)
-		finalColor = vec4(1.0, 1.0, 1.0, texture(tex, texCoord).r);
+		finalColor *= texture(tex, texCoord);
 
 	//check distance (from https://iquilezles.org/articles/distfunctions2d/):
 	//---------------------------------
