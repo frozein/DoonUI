@@ -53,12 +53,12 @@ class DNUIbox : public DNUIelement
 public:
 	DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}; //the box's color
 	float cornerRadius = 0.0f;				 //the radius of the box's corners, in pixels
+	float angle = 0.0f;						 //the box's rotation, in degrees
 	int texture = -1;						 //the openGL texture handle to use when rendering, or -1 if no texture is desired
 
 	DNUIbox() = default;
-	DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad = 0.0f, int tex = -1);
+	DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col = {1.0f, 1.0f, 1.0f, 1.0f}, float cornerRad = 0.0f, float angle = 0.0f, int tex = -1);
 
-	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void render(float parentAlphaMult);
 };
 
@@ -80,7 +80,7 @@ public:
 	DNUItransition holdTransition;  //the transition that plays when the button is held down
 
 	DNUIbutton() = default;
-	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 color, void (*buttonCallback)(int), int callbackID = 0, float cornerRad = 0.0f, int tex = -1, DNUItransition base = DNUItransition(), DNUItransition hover = DNUItransition(), DNUItransition hold = DNUItransition());
+	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, void (*buttonCallback)(int) = nullptr, int callbackID = 0, DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, float cornerRad = 0.0f, float angle = 0.0f, int tex = -1, DNUItransition base = DNUItransition(), DNUItransition hover = DNUItransition(), DNUItransition hold = DNUItransition());
 
 	/* Call whenever the cursor position or the state of the mouse button changes, will NOT invoke any of the button callback functions, for that, a DNUIevent must be sent
 	 * @param pos the mouse's screen position, with {0, 0} denoting the center of the screen
@@ -116,7 +116,7 @@ public:
 	float outlineSoftness = 0.05f;					//the softness of the outline's edges
 
 	DNUItext() = default;
-	DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string text, int font, DNvec4 color = {1.0f, 1.0f, 1.0f, 0.0f}, float scale = 1.0f, float lineWrap = 0.0f, int align = 0, float thickness = 0.5f, float softness = 0.05f, DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 0.0f}, float outlineThickness = 1.0f, float outlineSoftness = 0.05f);
+	DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string text, int font, DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, float scale = 1.0f, float lineWrap = 0.0f, int align = 0, float thickness = 0.5f, float softness = 0.05f, DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 0.0f}, float outlineThickness = 1.0f, float outlineSoftness = 0.05f);
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void render(float parentAlphaMult);

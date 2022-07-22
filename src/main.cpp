@@ -4,15 +4,18 @@
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 #include "DoonUI/element.hpp"
-
-extern "C" //idk why but this works
+extern "C"
 {
 	#include "DoonUI/render.h"
 	#include "DoonUI/math/vector.h"
 }
 
+//--------------------------------------------------------------------------------------------------------------------------------//
+
 DNivec2 windowSize = {1280, 720};
-DNUIelement* baseElement;
+DNUIelement baseElement = DNUIelement(); //create fullscreen element to serve as the "base"
+
+//--------------------------------------------------------------------------------------------------------------------------------//
 
 void window_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -24,8 +27,15 @@ void window_size_callback(GLFWwindow* window, int width, int height)
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-		baseElement->handle_event(DNUIevent(DNUIevent::MOUSE_RELEASE));
+		baseElement.handle_event(DNUIevent(DNUIevent::MOUSE_RELEASE));
 }
+
+void button_callback(int callbackID)
+{
+	std::cout << "Button #" << callbackID << " has been pressed!" << std::endl;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------//
 
 int main()
 {
@@ -35,7 +45,6 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
 	glfwWindowHint(GLFW_SAMPLES, 4);
 
 	//create and init window:
@@ -65,41 +74,74 @@ int main()
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
-
 	glEnable(GL_MULTISAMPLE);
 
+	//initialize DNUI:
+	//---------------------------------
 	DNUI_init(windowSize.x, windowSize.y);
 	int arialFont = DNUI_load_font("arial.ttf", 72);
 
-	DNUItransition baseTest = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
-	baseTest.set_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.5f));
-	baseTest.set_target_vec4({1.0f, 0.0f, 0.0f, 1.0f}, offsetof(DNUIbutton, color));
-	baseTest.set_target_float(20.0f, offsetof(DNUIbutton, cornerRadius));
+	//create test layout:
+	//---------------------------------
+	DNUItransition buttonBaseTransition = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
+	buttonBaseTransition.set_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.1f));
+	buttonBaseTransition.set_target_vec4({1.0f, 0.0f, 0.0f, 1.0f}, offsetof(DNUIbutton, color));
+	buttonBaseTransition.set_target_float(0.0f, offsetof(DNUIbutton, angle));
 
-	DNUItransition hoverTest = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
-	hoverTest.set_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.55f));
-	hoverTest.set_target_vec4({0.0f, 1.0f, 0.0f, 1.0f}, offsetof(DNUIbutton, color));
-	hoverTest.set_target_float(0.0f, offsetof(DNUIbutton, cornerRadius));
+	DNUItransition buttonHoverTransition = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
+	buttonHoverTransition.set_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.11f));
+	buttonHoverTransition.set_target_vec4({1.0f, 1.0f, 0.0f, 1.0f}, offsetof(DNUIbutton, color));
+	buttonHoverTransition.set_target_float(5.0f, offsetof(DNUIbutton, angle));
 
-	DNUItransition holdTest = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
-	holdTest.set_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.525f));
-	holdTest.set_target_vec4({0.0f, 0.0f, 1.0f, 1.0f}, offsetof(DNUIbutton, color));
-	holdTest.set_target_float(10.0f, offsetof(DNUIbutton, cornerRadius));
+	DNUItransition buttonHoldTransition = DNUItransition(500.0f, DNUItransition::EXPONENTIAL);
+	buttonHoldTransition.set_target_w(DNUIdimension(DNUIdimension::RELATIVE, 0.105f));
+	buttonHoldTransition.set_target_vec4({0.0f, 1.0f, 0.0f, 1.0f}, offsetof(DNUIbutton, color));
+	buttonHoldTransition.set_target_float(2.5f, offsetof(DNUIbutton, angle));
 
-	DNUIbutton testBox = DNUIbutton(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, nullptr, 0, 20.0f, -1, baseTest, hoverTest, holdTest);
-	
-	DNUItext* testText = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 
-	DNUIdimension(DNUIdimension::RELATIVE, 0.45f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 300.0f);
+	DNUIbutton baseButton = DNUIbutton(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f , DNUIcoordinate::CENTER_CENTER), 
+									   DNUIcoordinate(DNUIcoordinate::PIXELS  , 20.0f, DNUIcoordinate::CENTER_MIN),
+									   DNUIdimension(DNUIdimension::RELATIVE, 0.1f), DNUIdimension(DNUIdimension::ASPECT, 1.0f),
+									   button_callback, 0, {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, 0.0f, -1, 
+									   buttonBaseTransition, buttonHoverTransition, buttonHoldTransition);
 
-	DNUItext* testText2 = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 
-	DNUIdimension(DNUIdimension::RELATIVE, 0.45f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, -1.0f, 600.0f, 1);
+	DNUItext baseText = DNUItext(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f , DNUIcoordinate::CENTER_CENTER), 
+								 DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER),
+								 DNUIdimension(DNUIdimension::RELATIVE, 0.4f),
+								 "0", arialFont);
 
-	testBox.children.push_back((DNUIelement*)testText);
-	testBox.children.push_back((DNUIelement*)testText2);
+	for(int i = 1; i <= 5; i++)
+	{
+		DNUIbutton* button = new DNUIbutton(baseButton);
+		button->callbackID = i;
+		button->xPos.relativePos = 0.2f + i / 7.0f;
 
-	//testBox.set_transition(testTransition, 0.0f);
+		DNUItext* text = new DNUItext(baseText);
+		text->text = std::to_string(i);
+		button->children.push_back((DNUIelement*)text);
 
-	baseElement = &testBox;
+		baseElement.children.push_back((DNUIelement*)button);
+	}
+
+	DNUIbox* sidePanel = new DNUIbox(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN),
+									 DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER),
+									 DNUIdimension(DNUIdimension::RELATIVE, 0.2f), DNUIdimension(DNUIdimension::SPACE, 40.0f),
+									 {0.0f, 0.0f, 1.0f, 1.0f}, 40.0f, 0.0f, -1);
+
+	DNUItext* sidePanelText = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), 
+										   DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 
+										   DNUIdimension(DNUIdimension::SPACE, 40.0f), 
+										   "A simple and efficient method is presented which allows improved rendering of glyphs composed of curved and linear elements. A distance field is generated from a high resolution image, and then stored into a channel of a lower-resolution texture. In the simplest case, this texture can then be rendered simply by using the alphatesting and alpha-thresholding feature of modern GPUs, without a custom shader.",
+										   arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 300.0f);
+
+	sidePanel->children.push_back(sidePanelText);
+	baseElement.children.push_back(sidePanel);
+
+	DNUItext* fancyText = new DNUItext(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.6f , DNUIcoordinate::CENTER_CENTER),
+									   DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.55f, DNUIcoordinate::CENTER_CENTER),
+									   DNUIdimension(DNUIdimension::RELATIVE, 0.6f),
+									   "DoonUI", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 1.0f, 0.0f, 0, 0.65f, 0.5f, {1.0f, 0.2f, 1.0f, 1.0f}, 0.5f, 0.05f);
+
+	baseElement.children.push_back(fancyText);
 
 	//main loop:
 	//---------------------------------
@@ -107,23 +149,27 @@ int main()
 
 	while(!glfwWindowShouldClose(window))
 	{
+		//calculate dt:
+		//---------------------------------
 		float newTime = glfwGetTime() * 1000.0f;
 		float deltaTime = newTime - oldTime;
 		oldTime = newTime;
 
+		//update mouse state:
+		//---------------------------------
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 		DNUIbutton::set_mouse_state({(float)mouseX - windowSize.x * 0.5f, (float)mouseY - windowSize.y * 0.5f}, glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
 
+		//clear rendering buffer:
+		//---------------------------------
 		glClearColor(0.0, 0.0, 0.0, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-		testBox.update(deltaTime, {0.0f, 0.0f}, {(float)windowSize.x, (float)windowSize.y});
-		testBox.render(1.0f);
-		//DNUI_draw_rect(-1, {0, 720 / 2}, {w * 2, 600}, 0.0f, {1.0, 1.0, 0.0, 1.0}, 30);
-		//DNUI_draw_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean et arcu metus. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam vitae nulla vitae neque lacinia sollicitudin ac ut ipsum. Phasellus leo quam, lobortis ac tincidunt a, molestie non eros. Nulla ultrices fermentum justo, a porta nisl. Vivamus bibendum tempus augue, non aliquam quam dapibus in.", arialFont, {0, 0}, 0.5f, 500, 2, {1.0f, 1.0f, 1.0f, 1.0f}, 0.7f, 0.05f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 0.05f);
-		//DNUI_draw_string("Hello world!", arialFont, {100, 350}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.55f, 0.05f, {1.0f, 0.0f, 0.0f, 1.0f}, 0.45f, 0.05f);
-		//DNUI_draw_string("Hello world!", arialFont, {100, 150}, 3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 0.05f, {0.0f, 1.0f, 0.0f, 1.0f}, 0.45f, 0.5f);
+		//render + draw ui:
+		//---------------------------------
+		baseElement.update(deltaTime, {0.0f, 0.0f}, {(float)windowSize.x, (float)windowSize.y});
+		baseElement.render(1.0f);
 
 		//finish rendering and swap:
 		glfwSwapBuffers(window);

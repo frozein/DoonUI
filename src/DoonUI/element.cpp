@@ -49,6 +49,9 @@ DNUIelement::~DNUIelement()
 
 void DNUIelement::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
+	renderSize = _DNUI_calc_render_size(parentSize, width, height);
+	renderPos = _DNUI_calc_render_pos(parentPos, parentSize, renderSize, xPos, yPos);
+
 	if(activeTransition)
 		activeTransition = transition.update(dt, this, parentSize, renderSize);
 
@@ -77,31 +80,24 @@ void DNUIelement::set_transition(DNUItransition trans, float delay)
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUIbox::DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad, int tex) : DNUIelement::DNUIelement(x, y, w, h)
+DNUIbox::DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad, float agl, int tex) : DNUIelement::DNUIelement(x, y, w, h)
 {
 	color = col;
 	cornerRadius = cornerRad;
+	angle = agl;
 	texture = tex;
-}
-
-void DNUIbox::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
-{
-	renderSize = _DNUI_calc_render_size(parentSize, width, height);
-	renderPos = _DNUI_calc_render_pos(parentPos, parentSize, renderSize, xPos, yPos);
-
-	DNUIelement::update(dt, parentPos, parentSize);
 }
 
 void DNUIbox::render(float parentAlphaMult)
 {
 	DNvec4 renderCol = {color.x, color.y, color.z, color.w * alphaMult * parentAlphaMult};
-	DNUI_draw_rect(texture, renderPos, renderSize, 0.0f, renderCol, cornerRadius);
+	DNUI_draw_rect(texture, renderPos, renderSize, angle, renderCol, cornerRadius);
 	DNUIelement::render(parentAlphaMult);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUIbutton::DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, void (*buttonCallback)(int), int id, float cornerRad, int tex, DNUItransition base, DNUItransition hover, DNUItransition hold) : DNUIbox::DNUIbox(x, y, w, h, col, cornerRad, tex)
+DNUIbutton::DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, void (*buttonCallback)(int), int id, DNvec4 col, float cornerRad, float angle, int tex, DNUItransition base, DNUItransition hover, DNUItransition hold) : DNUIbox::DNUIbox(x, y, w, h, col, cornerRad, angle, tex)
 {
 	button_callback = buttonCallback;
 	callbackID = id;
@@ -118,8 +114,8 @@ void DNUIbutton::set_mouse_state(DNvec2 pos, bool pressed)
 
 void DNUIbutton::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
-	if(mousePos.x > renderPos.x - renderSize.x * 0.5f && mousePos.x < renderPos.x + renderSize.x * 0.5f &&
-	   mousePos.y > renderPos.y - renderSize.y * 0.5f && mousePos.y < renderPos.y + renderSize.y * 0.5f)
+	if(mousePos.x >  renderPos.x - renderSize.x * 0.5f && mousePos.x <  renderPos.x + renderSize.x * 0.5f &&
+	   mousePos.y > -renderPos.y - renderSize.y * 0.5f && mousePos.y < -renderPos.y + renderSize.y * 0.5f)
 	{
 		if(mousePressed)
 		{
@@ -146,7 +142,9 @@ void DNUIbutton::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 
 void DNUIbutton::handle_event(DNUIevent event)
 {
-	if(event.type == DNUIevent::MOUSE_RELEASE)
+	if(event.type == DNUIevent::MOUSE_RELEASE &&
+	   mousePos.x >  renderPos.x - renderSize.x * 0.5f && mousePos.x <  renderPos.x + renderSize.x * 0.5f &&
+	   mousePos.y > -renderPos.y - renderSize.y * 0.5f && mousePos.y < -renderPos.y + renderSize.y * 0.5f)
 	{
 		if(button_callback != nullptr)
 			button_callback(callbackID);
@@ -179,24 +177,23 @@ DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::
 
 void DNUItext::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
-	float requiredWidth = width.calc_render_size(parentSize.x);
 	if(lineWrap <= 0.0f)
 	{
-		renderScale = requiredWidth / DNUI_string_render_size(text.c_str(), font, 1.0f, 0.0f).x;
+		renderScale = renderSize.x / DNUI_string_render_size(text.c_str(), font, 1.0f, 0.0f).x;
 		renderW = 0.0f;
 	}
 	else
 	{
-		renderW = requiredWidth;
+		renderW = renderSize.x;
 
 		if(scale <= 0.0f)
-			renderScale = requiredWidth / lineWrap;
+			renderScale = renderSize.x / lineWrap;
 		else
 			renderScale = scale;
 	}
 
-	renderSize = DNUI_string_render_size(text.c_str(), font, renderScale, renderW);
-	renderPos = _DNUI_calc_render_pos(parentPos, parentSize, renderSize, xPos, yPos);
+	height.type = DNUIdimension::PIXELS;
+	height.pixelSize = DNUI_string_render_size(text.c_str(), font, renderScale, renderW).y;
 
 	DNUIelement::update(dt, parentPos, parentSize);
 }
