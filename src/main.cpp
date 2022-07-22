@@ -36,6 +36,8 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	glfwWindowHint(GLFW_SAMPLES, 4);
+
 	//create and init window:
 	//---------------------------------
 	GLFWwindow* window = glfwCreateWindow(windowSize.x, windowSize.y, "DoonUI", NULL, NULL);
@@ -64,10 +66,12 @@ int main()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 
+	glEnable(GL_MULTISAMPLE);
+
 	DNUI_init(windowSize.x, windowSize.y);
 	int arialFont = DNUI_load_font("arial.ttf", 72);
 
-	DNUIbutton testBox = DNUIbutton(DNUIbutton::AnimState(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, 0.0f), nullptr, 0);
+	DNUIbutton testBox = DNUIbutton(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.5f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, nullptr, 0, 20.0f, -1);
 	
 	DNUItext* testText = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 
 	DNUIdimension(DNUIdimension::RELATIVE, 0.45f), "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce placerat congue sollicitudin. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 300.0f);
@@ -78,17 +82,24 @@ int main()
 	testBox.children.push_back((DNUIelement*)testText);
 	testBox.children.push_back((DNUIelement*)testText2);
 
-	testBox.start_anim(DNUIanimData(1.0f, true, DNUIanimData::EXPONENTIAL), DNUIbutton::AnimState(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.0f, DNUIcoordinate::CENTER_CENTER), DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER), DNUIdimension(DNUIdimension::RELATIVE, 0.25f), DNUIdimension(DNUIdimension::ASPECT, 1.0f), {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, 0.0f));
+	DNUItransition testTransition = DNUItransition(1000.0f, DNUItransition::EXPONENTIAL);
+	testTransition.add_target_x(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.0f, DNUIcoordinate::CENTER_CENTER));
+	testTransition.add_target_w(DNUIdimension(DNUIdimension::ASPECT, 1.0f));
+	testTransition.add_target_h(DNUIdimension(DNUIdimension::RELATIVE, 0.5f));
+	testTransition.add_target_color({0.0f, 1.0f, 0.0f, 1.0f});
+	testTransition.add_target_float(0.0f, offsetof(DNUIbutton, cornerRadius));
+
+	testBox.set_transition(testTransition, 0.0f);
 
 	baseElement = &testBox;
 
 	//main loop:
 	//---------------------------------
-	float oldTime = glfwGetTime();
+	float oldTime = glfwGetTime() * 1000.0f;
 
 	while(!glfwWindowShouldClose(window))
 	{
-		float newTime = glfwGetTime();
+		float newTime = glfwGetTime() * 1000.0f;
 		float deltaTime = newTime - oldTime;
 		oldTime = newTime;
 

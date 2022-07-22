@@ -77,32 +77,113 @@ struct DNUIevent
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------//
-//ANIMATION STRUCT:
+//TRANSITION CLASS:
 
-//a struct that represents data about an animation
-struct DNUIanimData
+class DNUIelement;
+
+//represents a transition for a UI element, facilitates interpolating to a new state
+class DNUItransition
 {
 private:
-	float a; //the animation's progress, ranges from 0-1
+	struct Component
+	{
+		enum DataType
+		{
+			COORDINATE,
+			DIMENSION,
+			FLOAT,
+			VEC2,
+			VEC3,
+			VEC4
+		} type;
+
+		size_t offset;
+
+		union
+		{
+			struct 
+			{
+				DNUIcoordinate original;
+				DNUIcoordinate target;
+				bool x;
+			} coordinate;
+
+			struct 
+			{
+				DNUIdimension original;
+				DNUIdimension target;
+				bool w;
+			} dimension;
+
+			struct
+			{
+				float original;
+				float target;
+			} floating;
+
+			struct
+			{
+				DNvec2 original;
+				DNvec2 target;
+			} vector2;
+
+			struct
+			{
+				DNvec3 original;
+				DNvec3 target;
+			} vector3;
+
+			struct
+			{
+				DNvec4 original;
+				DNvec4 target;
+			} vector4;
+		};
+	};
+
+	std::vector<Component> components;
+	float alpha = 0.0f;
+	float delay = 0.0f;
 
 public:
-	float speed; //how fast the animation plays
-	bool repeat; //whether or not the animation will repeat backwards on completion
+	float time = 1000.0f; //how long the transition will take, in milliseconds
 
-	//determines how the animation will be interpolated
+	//determines how the transition will be interpolated
 	enum InterpolationType
 	{
 		LINEAR,
 		QUADRATIC,
 		CUBIC,
 		EXPONENTIAL
-	} interpolateType;
+	} interpolateType = LINEAR;
 
-	DNUIanimData();
-	DNUIanimData(float speed, bool repeat, DNUIanimData::InterpolationType interpolateType);
+	DNUItransition();
+	DNUItransition(float time, InterpolationType interpolate);
 
-	float update_alpha(float dt);
-	void reset();
+	//sets the target x position
+	void add_target_x(DNUIcoordinate x);
+	//sets the target y position
+	void add_target_y(DNUIcoordinate y);
+	//sets the target width
+	void add_target_w(DNUIdimension  w);
+	//sets the target height
+	void add_target_h(DNUIdimension  h);
+	//sets the target color
+	void add_target_color(DNvec4 col);
+
+	//sets a target float value, use offsetof to determine the offset
+	void add_target_float(float target, size_t offset);
+	//sets a target vec2 value, use offsetof to determine the offset
+	void add_target_vec2(DNvec2 target, size_t offset);
+	//sets a target vec3 value, use offsetof to determine the offset
+	void add_target_vec3(DNvec3 target, size_t offset);
+	//sets a target vec4 value, use offsetof to determine the offset
+	void add_target_vec4(DNvec4 target, size_t offset);
+
+	//initializes the transition, call before calling update(). the animation will begin after delay() milliseconds
+	void init(DNUIelement* element, float delay);
+	//updates the transition
+	bool update(float dt, DNUIelement* element, DNvec2 parentSize, DNvec2 size);
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -111,19 +192,37 @@ public:
 //a generic UI element, has no functionality on its own other than to update/render child elements
 class DNUIelement
 {
+protected:
+	DNvec2 renderPos;  //the final position of the box's center, in pixels
+	DNvec2 renderSize; //the final size of the box, in pixels
+
 public:
 	std::vector<DNUIelement*> children;
 
+	bool activeTransition = false;
+	DNUItransition transition;
+
+	DNUIcoordinate xPos;
+	DNUIcoordinate yPos;
+	DNUIdimension width;
+	DNUIdimension height;
+	DNvec4 color;
+	float alphaMult;
+
 	DNUIelement();
+	DNUIelement(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h);
 	//deletes all child elements, do NOT delete child elements yourself
 	~DNUIelement();
 
-	//calls update() on all child elements, can be overriden
+	//calls update() on all child elements and updates the transition, can be overriden
 	virtual void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	//calls render() on all child elements, can be overriden
 	virtual void render();
 	//calls handle_event() on all child elements, can be overriden
 	virtual void handle_event(DNUIevent event);
+
+	//sets the current transition, will begin after delay milliseconds
+	void set_transition(DNUItransition transition, float delay);
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -133,45 +232,14 @@ public:
 class DNUIbox : public DNUIelement
 {
 public:
-	struct AnimState
-	{
-		DNUIcoordinate xPos;  //the x position of the box
-		DNUIcoordinate yPos;  //the y position of the box
-		DNUIdimension width;  //the width of the box
-		DNUIdimension height; //the height of the box
-
-		DNvec4 color;		//the box's color
-		float cornerRadius; //the radius of the box's corners, in pixels
-		float angle;		//the rotation of the box, in degrees
-
-		AnimState();
-		AnimState(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad = 0.0f, float angle = 0.0f);
-
-		//linearly interpolates between two animation states
-		static AnimState lerp(AnimState a, AnimState b, float alpha, DNvec2 parentSize);
-	};
-
-protected:
-	DNvec2 renderPos;  //the final position of the box's center, in pixels
-	DNvec2 renderSize; //the final size of the box, in pixels
-
-	AnimState renderState; //the final animation state of the box
-
-public:
-	AnimState currentState; //the box's "base state" (not necessarily how it is currently rendered, see renderState)
-	AnimState targetState;  //the box's "target state"
-	DNUIanimData animData;  //how the box will interpolate between the two states
-
-	int texture; //the openGL texture handle to use when rendering, or -1 if no texture is desired
+	float cornerRadius; //the radius of the box's corners, in pixels
+	int texture;		//the openGL texture handle to use when rendering, or -1 if no texture is desired
 
 	DNUIbox();
-	DNUIbox(AnimState state, int tex = -1);
+	DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad = 0.0f, int tex = -1);
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void render();
-
-	//sets the target state and the anim data, beginning an animation
-	void start_anim(DNUIanimData data, AnimState state);
 };
 
 //a button that calls a user-defined function when clicked
@@ -186,7 +254,7 @@ public:
 	int callbackID;				  //the unique id that gets passed to the callback function, used to differentiate buttons that have the same callback func
 
 	DNUIbutton();
-	DNUIbutton(AnimState state, void (*buttonCallback)(int), int callbackID = 0, int tex = -1);
+	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 color, void (*buttonCallback)(int), int callbackID = 0, float cornerRad = 0.0f, int tex = -1);
 
 	/* Call whenever the cursor position or the state of the mouse button changes, will NOT invoke any of the button callback functions, for that, a DNUIevent must be sent
 	 * @param pos the mouse's screen position, with {0, 0} denoting the center of the screen
@@ -202,19 +270,14 @@ public:
 class DNUItext : public DNUIelement
 {
 private:
-	DNvec2 renderPos;  //the final position of the text's center, in pixels
 	float renderScale; //the final scale of text
 	float renderW;	   //the final maximum line width of the text, in pixels
 
 public:
-	DNUIcoordinate xPos;
-	DNUIcoordinate yPos;
-	DNUIdimension width;
 
 	//text parameters:
 	std::string text;		//the text to render
 	int font;				//the handle to the font to render with
-	DNvec4 color;			//the color of the text
 	float scale;			//the scale of the text, or -1 for automatic scaling
 	float lineWrap; 		//the maximum number of pixels the text can extend before wrapping, to 0.0 if no wrapping is desired
 	int align; 				//how to align the text when wrapping: 0 = align left, 1 = align right, 2 = align center
