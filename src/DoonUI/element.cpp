@@ -201,8 +201,9 @@ void DNUItext::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 void DNUItext::render(float parentAlphaMult)
 {
 	DNvec4 renderCol = {color.x, color.y, color.z, color.w * alphaMult * parentAlphaMult};
+	DNvec4 outlineRenderCol = {outlineColor.x, outlineColor.y, outlineColor.z, outlineColor.w * alphaMult * parentAlphaMult};
 	if(font >= 0)
-		DNUI_draw_string(text.c_str(), font, renderPos, renderScale, renderW, align, renderCol, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+		DNUI_draw_string(text.c_str(), font, renderPos, renderScale, renderW, align, renderCol, thickness, softness, outlineRenderCol, outlineThickness, outlineSoftness);
 
 	DNUIelement::render(parentAlphaMult);
 }
