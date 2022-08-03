@@ -29,16 +29,34 @@ void DNUI_set_window_size(unsigned int w, unsigned int h);
 //--------------------------------------------------------------------------------------------------------------------------------//
 //TEXT RENDERING:
 
+//represents a font for text rendering
+typedef struct DNUIfont
+{
+	unsigned int textureAtlas; //the openGL handle to the texture atlas
+	DNivec2 atlasSize;         //the texture atlas' size, in pixels
+	float maxBearing;          //the maximum bearing of the character, in pixels
+
+	struct
+	{
+		float advance;   //how far the pen should advance after drawing this glyph, in pixels
+		float bmpW;      //the glpyh's bitmap width, in pixels
+		float bmpH;      //the glpyh's bitmap height, in pixels
+		float bmpL;      //the position of the left edge of the glyph's bitmap, in pixels
+		float bmpT;      //the position of the top edge of the glyph's bitmap, in pixels
+		float texOffset; //the offset of the glyph in the texture atlas, in uv coordinates
+	} glyphInfo[128];
+} DNUIfont;
+
 /* Loads a font from a TrueType font file
  * @param path the file path to the .ttf file
  * @param size the height of each glyph, in pixels, larger values may take significantly longer to load
- * @returns a handle to the loaded font, or -1 on failure
+ * @returns the loaded font, or NULL on failure
  */
-int DNUI_load_font(const char* path, int size);
+DNUIfont* DNUI_load_font(const char* path, int size);
 /* Frees a font from memory, must be called to avoid memory leaks
- * @param font the handle to the font to free
+ * @param font the font to free
  */
-void DNUI_free_font(int font);
+void DNUI_free_font(DNUIfont* font);
 
 /* Calculates the size of a string when rendered to the screen
  * @param text the string to calculate
@@ -47,7 +65,7 @@ void DNUI_free_font(int font);
  * @param wrap the maximum number of pixels the string can extend horizontally before wrapping to a new line. Set to 0 if no wrapping is desired
  * @returns the size of the string when rendered, in pixels
  */
-DNvec2 DNUI_string_render_size(const char* text, int font, float scale, float wrap);
+DNvec2 DNUI_string_render_size(const char* text, DNUIfont* font, float scale, float wrap);
 /* Renders a string to the screen
  * @param text the string to render
  * @param font the handle to the font to use
@@ -62,7 +80,7 @@ DNvec2 DNUI_string_render_size(const char* text, int font, float scale, float wr
  * @param outlineThickness the thickness at which the text's outline begins. Set to 1.0 if no outline is desired
  * @param outlineSoftness the softness of the outline's edges, 0.05 is the default value
  */
-void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float wrap, int align, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness);
+void DNUI_draw_string(const char* text, DNUIfont* font, DNvec2 pos, float scale, float wrap, int align, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness);
 /* Renders a string to the screen, same as DNUI_draw_string() but with fewer parameters
  * @param text the string to render
  * @param font the handle to the font to use
@@ -72,7 +90,7 @@ void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float
  * @param align how to align the text when wrapping: 0 = align left (all lines start at left side), 1 = align right (all lines end at right side), 2 = align center (all lines are individually centered)
  * @param color the color of the text, in rgba format
  */
-void DNUI_draw_string_simple(const char* text, int font, DNvec2 pos, float scale, float wrap, int align, DNvec4 color);
+void DNUI_draw_string_simple(const char* text, DNUIfont* font, DNvec2 pos, float scale, float wrap, int align, DNvec4 color);
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //RECT RENDERING:

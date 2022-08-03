@@ -24,27 +24,6 @@ static GLuint textArray;
 
 static FT_Library freetypeLib;
 
-typedef struct DNUIfont
-{
-	int textureAtlas;
-	DNivec2 atlasSize;
-	float maxBearing;
-
-	struct
-	{
-		float advance;
-		float bmpW;
-		float bmpH;
-		float bmpL;
-		float bmpT;
-		float texOffset;
-	} glyphInfo[128];
-} DNUIfont;
-
-#define DNUI_MAX_FONTS 16
-int curFont = 0;
-DNUIfont fonts[DNUI_MAX_FONTS];
-
 //--------------------------------------------------------------------------------------------------------------------------------//
 //for rendering rectangles:
 
@@ -154,28 +133,9 @@ void DNUI_set_window_size(unsigned int w, unsigned int h)
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-int DNUI_load_font(const char* path, int size)
+DNUIfont* DNUI_load_font(const char* path, int size)
 {	
-	//find new font index:
-	//---------------------------------
-	int newIndex = curFont;
-	for(int i = 0; i < curFont; i++)
-		if(fonts[i].textureAtlas < 0)
-		{
-			newIndex = i;
-			break;
-		}
-	
-	if(newIndex == curFont)
-	{
-		if(curFont >= DNUI_MAX_FONTS)
-		{
-			printf("DNUI ERROR - MAX FONTS EXCEEDED\n");
-			return -1;
-		}
-
-		curFont++;
-	}
+	DNUIfont* res = malloc(sizeof(DNUIfont));
 
 	//load freetype face:
 	//---------------------------------
@@ -183,7 +143,7 @@ int DNUI_load_font(const char* path, int size)
 	if(FT_New_Face(freetypeLib, path, 0, &font))
 	{
 		printf("DNUI ERROR - FAILED TO LOAD FONT \"%s\"\n", path);
-		return -1;
+		return NULL;
 	}
 
 	FT_Set_Pixel_Sizes(font, 0, size);
@@ -204,7 +164,7 @@ int DNUI_load_font(const char* path, int size)
 
 		FT_Render_Glyph(font->glyph, FT_RENDER_MODE_SDF); //TODO: find a way to not render the text twice
 
-		fonts[newIndex].maxBearing = font->glyph->bitmap_top > fonts[newIndex].maxBearing ? font->glyph->bitmap_top : fonts[newIndex].maxBearing;
+		res->maxBearing = font->glyph->bitmap_top > res->maxBearing ? font->glyph->bitmap_top : res->maxBearing;
 
 		w += font->glyph->bitmap.width + texturePadding;
 		h = font->glyph->bitmap.rows > h ? font->glyph->bitmap.rows : h;
@@ -234,12 +194,12 @@ int DNUI_load_font(const char* path, int size)
 		FT_Render_Glyph(font->glyph, FT_RENDER_MODE_SDF);
 
 		//set data:
-		fonts[newIndex].glyphInfo[i].advance = font->glyph->advance.x / 64.0f;
-		fonts[newIndex].glyphInfo[i].bmpW = font->glyph->bitmap.width;
-		fonts[newIndex].glyphInfo[i].bmpH = font->glyph->bitmap.rows;
-		fonts[newIndex].glyphInfo[i].bmpL = font->glyph->bitmap_left;
-		fonts[newIndex].glyphInfo[i].bmpT = font->glyph->bitmap_top;
-		fonts[newIndex].glyphInfo[i].texOffset = (float)x / w;
+		res->glyphInfo[i].advance = font->glyph->advance.x / 64.0f;
+		res->glyphInfo[i].bmpW = font->glyph->bitmap.width;
+		res->glyphInfo[i].bmpH = font->glyph->bitmap.rows;
+		res->glyphInfo[i].bmpL = font->glyph->bitmap_left;
+		res->glyphInfo[i].bmpT = font->glyph->bitmap_top;
+		res->glyphInfo[i].texOffset = (float)x / w;
 
 		//set texture:
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, font->glyph->bitmap.width, font->glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, font->glyph->bitmap.buffer);
@@ -248,39 +208,39 @@ int DNUI_load_font(const char* path, int size)
 		x += font->glyph->bitmap.width + texturePadding;
 	}
 
-	fonts[newIndex].textureAtlas = tex;
-	fonts[newIndex].atlasSize.x = w;
-	fonts[newIndex].atlasSize.y = h;
+	res->textureAtlas = tex;
+	res->atlasSize.x = w;
+	res->atlasSize.y = h;
 
-	return newIndex;
+	return res;
 }
 
-void DNUI_free_font(int font)
+void DNUI_free_font(DNUIfont* font)
 {
-	glDeleteTextures(1, &fonts[font].textureAtlas);
-	fonts[font].textureAtlas = -1;
+	glDeleteTextures(1, &font->textureAtlas);
+	free(font);
 }
 
-float _DNUI_line_render_size(const char* text, int font, float scale)
+float _DNUI_line_render_size(const char* text, DNUIfont* font, float scale)
 {
 	float w = 0.0;
 
 	for(char* c = (char*)text; *c != '\0'; c++)
 	{
 		if(*(c + 1) == '\0')
-			w += fonts[font].glyphInfo[*c].bmpL + fonts[font].glyphInfo[*c].bmpW;
+			w += font->glyphInfo[*c].bmpL + font->glyphInfo[*c].bmpW;
 		else
-			w += fonts[font].glyphInfo[*c].advance;
+			w += font->glyphInfo[*c].advance;
 	}
 
 	return w * scale;
 }
 
-DNvec2 DNUI_string_render_size(const char* text, int font, float scale, float maxW)
+DNvec2 DNUI_string_render_size(const char* text, DNUIfont* font, float scale, float maxW)
 {
 	DNvec2 res;
 	if(maxW <= 0.0f)
-		return (DNvec2){_DNUI_line_render_size(text, font, scale), fonts[font].atlasSize.y * scale};
+		return (DNvec2){_DNUI_line_render_size(text, font, scale), font->atlasSize.y * scale};
 	else
 		res.x = maxW;
 
@@ -298,9 +258,9 @@ DNvec2 DNUI_string_render_size(const char* text, int font, float scale, float ma
 		if(text[i] == ' ')
 		{
 			lastSpace = i;
-			curWidth += fonts[font].glyphInfo[text[i]].advance * scale;
+			curWidth += font->glyphInfo[text[i]].advance * scale;
 		}
-		else if(curWidth + (fonts[font].glyphInfo[text[i]].bmpL + fonts[font].glyphInfo[text[i]].bmpW) * scale > maxW)
+		else if(curWidth + (font->glyphInfo[text[i]].bmpL + font->glyphInfo[text[i]].bmpW) * scale > maxW)
 		{
 			int endPos = lastSpace <= startPos ? i : lastSpace + 1;
 			numLines++;
@@ -309,18 +269,18 @@ DNvec2 DNUI_string_render_size(const char* text, int font, float scale, float ma
 			curWidth = 0.0;
 		}
 		else
-			curWidth += fonts[font].glyphInfo[text[i]].advance * scale;
+			curWidth += font->glyphInfo[text[i]].advance * scale;
 	}
 
 	if(i > startPos)
 		numLines++;
 
-	res.y = numLines * fonts[font].atlasSize.y * scale;
+	res.y = numLines * font->atlasSize.y * scale;
 	return res;
 }
 
 //draws a single line of text
-void _DNUI_draw_string_line(const char* text, int font, DNvec2 pos, float scale, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
+void _DNUI_draw_string_line(const char* text, DNUIfont* font, DNvec2 pos, float scale, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
 {
 	//create vertex array:
 	//---------------------------------
@@ -341,16 +301,16 @@ void _DNUI_draw_string_line(const char* text, int font, DNvec2 pos, float scale,
 	int i = 0;
 	for(char* c = (char*)text; *c != '\0'; c++)
 	{
-		float texOffset = fonts[font].glyphInfo[*c].texOffset;
-		float bmpW = fonts[font].glyphInfo[*c].bmpW / fonts[font].atlasSize.x;
-		float bmpH = fonts[font].glyphInfo[*c].bmpH / fonts[font].atlasSize.y;
+		float texOffset = font->glyphInfo[*c].texOffset;
+		float bmpW = font->glyphInfo[*c].bmpW / font->atlasSize.x;
+		float bmpH = font->glyphInfo[*c].bmpH / font->atlasSize.y;
 
-		float x =  pos.x + fonts[font].glyphInfo[*c].bmpL * scale;
-		float y = -pos.y - (fonts[font].glyphInfo[*c].bmpT - fonts[font].maxBearing) * scale;
-		float w = fonts[font].glyphInfo[*c].bmpW * scale;
-		float h = fonts[font].glyphInfo[*c].bmpH * scale;
+		float x =  pos.x + font->glyphInfo[*c].bmpL * scale;
+		float y = -pos.y - (font->glyphInfo[*c].bmpT - font->maxBearing) * scale;
+		float w = font->glyphInfo[*c].bmpW * scale;
+		float h = font->glyphInfo[*c].bmpH * scale;
 
-		pos.x += fonts[font].glyphInfo[*c].advance * scale;
+		pos.x += font->glyphInfo[*c].advance * scale;
 
 		//don't render spaces
 		if(w <= 0.0 || h <= 0.0)
@@ -380,7 +340,7 @@ void _DNUI_draw_string_line(const char* text, int font, DNvec2 pos, float scale,
 	glUniform1f(glGetUniformLocation(textProgram, "outlineThickness"), 1.0 - outlineThickness);
 	glUniform1f(glGetUniformLocation(textProgram, "outlineSoftness"), outlineSoftness);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, fonts[font].textureAtlas);
+	glBindTexture(GL_TEXTURE_2D, font->textureAtlas);
 
 	glBindVertexArray(textArray);
 	glDrawArrays(GL_TRIANGLES, 0, i);
@@ -388,7 +348,7 @@ void _DNUI_draw_string_line(const char* text, int font, DNvec2 pos, float scale,
 	free(vertices);
 }
 
-void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float maxW, int align, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
+void DNUI_draw_string(const char* text, DNUIfont* font, DNvec2 pos, float scale, float maxW, int align, DNvec4 color, float thickness, float softness, DNvec4 outlineColor, float outlineThickness, float outlineSoftness)
 {
 	DNvec2 size = DNUI_string_render_size(text, font, scale, maxW);
 	pos.x -= size.x * 0.5f;
@@ -414,9 +374,9 @@ void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float
 		if(text[i] == ' ')
 		{
 			lastSpace = i;
-			curWidth += fonts[font].glyphInfo[text[i]].advance * scale;
+			curWidth += font->glyphInfo[text[i]].advance * scale;
 		}
-		else if(curWidth + (fonts[font].glyphInfo[text[i]].bmpL + fonts[font].glyphInfo[text[i]].bmpW) * scale > maxW)
+		else if(curWidth + (font->glyphInfo[text[i]].bmpL + font->glyphInfo[text[i]].bmpW) * scale > maxW)
 		{
 			char* line;
 
@@ -431,7 +391,7 @@ void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float
 			else if(align == 2)
 				x += (size.x - _DNUI_line_render_size(line, font, scale)) * 0.5f;
 
-			_DNUI_draw_string_line(line, font, (DNvec2){x, pos.y - fonts[font].atlasSize.y * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+			_DNUI_draw_string_line(line, font, (DNvec2){x, pos.y - font->atlasSize.y * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
 
 			free(line);
 
@@ -441,7 +401,7 @@ void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float
 			curWidth = 0.0;
 		}
 		else
-			curWidth += fonts[font].glyphInfo[text[i]].advance * scale;
+			curWidth += font->glyphInfo[text[i]].advance * scale;
 	}
 
 	if(i > startPos)
@@ -458,13 +418,13 @@ void DNUI_draw_string(const char* text, int font, DNvec2 pos, float scale, float
 		else if(align == 2)
 			x += (size.x - _DNUI_line_render_size(line, font, scale)) * 0.5f;
 
-		_DNUI_draw_string_line(line, font, (DNvec2){x, pos.y - fonts[font].atlasSize.y * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
+		_DNUI_draw_string_line(line, font, (DNvec2){x, pos.y - font->atlasSize.y * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
 
 		free(line);
 	}
 }
 
-void DNUI_draw_string_simple(const char* text, int font, DNvec2 pos, float scale, float wrap, int align, DNvec4 color)
+void DNUI_draw_string_simple(const char* text, DNUIfont* font, DNvec2 pos, float scale, float wrap, int align, DNvec4 color)
 {
 	DNUI_draw_string(text, font, pos, scale, wrap, align, color, 0.5f, 0.05f, (DNvec4){0.0f, 0.0f, 0.0f, 0.0f}, 1.0f, 0.05f);
 }

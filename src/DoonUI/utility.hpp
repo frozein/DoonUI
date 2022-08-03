@@ -14,15 +14,15 @@ struct DNUIcoordinate
 	enum Type
 	{
 		RELATIVE, //the element will be positioned relative to its parent's size. For example, a relativePos of 0.5 would place the element in the center of its parent
-		PIXELS	  //the element will be positioned relative to its parent's center, min, or max (depending on what center is set to), being offset by pixelPos pixels
+		PIXELS    //the element will be positioned relative to its parent's center, min, or max (depending on what center is set to), being offset by pixelPos pixels
 	} type = RELATIVE;
 
 	//determines at what point the element will be centered
 	enum Center
 	{
-		CENTER_MIN,	   //the element will be positioned centered at its minimum coordinate
+		CENTER_MIN,    //the element will be positioned centered at its minimum coordinate
 		CENTER_CENTER, //the element will be positioned centered at its center
-		CENTER_MAX	   //the element will be positioned centered at its maximum coordinate
+		CENTER_MAX     //the element will be positioned centered at its maximum coordinate
 	} center = CENTER_CENTER;
 
 	union
@@ -44,9 +44,9 @@ struct DNUIdimension
 	enum Type
 	{
 		RELATIVE, //the element will be sized relative to its parent's size. For example, a relativeSize of 0.5 would result in the element being half as large as it's parent
-		PIXELS,	  //the element will have a fixed pixel size
-		ASPECT,	  //the element's size will be relative to its size in the other dimension
-		SPACE	  //the element will be sized such that it takes up emptyPixels fewer pixels that it's parent does
+		PIXELS,   //the element will have a fixed pixel size
+		ASPECT,   //the element's size will be relative to its size in the other dimension
+		SPACE     //the element will be sized such that it takes up emptyPixels fewer pixels that it's parent does
 	} type = RELATIVE;
 
 	union

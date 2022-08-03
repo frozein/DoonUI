@@ -5,6 +5,10 @@
 #include <vector>
 #include "math/common.h"
 #include "utility.hpp"
+extern "C"
+{
+	#include "render.h"
+}
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //ELEMENT CLASS:
@@ -68,14 +72,14 @@ public:
 class DNUIbutton : public DNUIbox
 {
 private:
-	inline static DNvec2 mousePos;  //the mouse's current screen position
+	inline static DNvec2 mousePos;   //the mouse's current screen position
 	inline static bool mousePressed; //whether or not the mouse button is held down
 
 	int curState = 0; //0 = not hovered, 1 = hovered, 2 = held
 
 public:
 	void (*button_callback)(int) = nullptr; //the function that gets called when the button is clicked
-	int callbackID = 0;						//the unique id that gets passed to the callback function, used to differentiate buttons that have the same callback func
+	int callbackID = 0;                     //the unique id that gets passed to the callback function, used to differentiate buttons that have the same callback func
 
 	DNUItransition baseTransition;  //the base transition state of the button. NOTE: if the position/size/etc of the button is changed, the base transition should also be changed to reflect this
 	DNUItransition hoverTransition; //the transition that plays when the button is hovered
@@ -99,26 +103,26 @@ class DNUItext : public DNUIelement
 {
 private:
 	float renderScale; //the final scale of text
-	float renderW;	   //the final maximum line width of the text, in pixels
+	float renderW;     //the final maximum line width of the text, in pixels
 
 public:
 	//text parameters:
-	std::string text;						 //the text to render
-	int font = -1;							 //the handle to the font to render with
+	std::string text;                        //the text to render
+	DNUIfont* font = nullptr;                //the handle to the font to render with
 	DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}; //the text's color
-	float scale = 1.0f;						 //the scale of the text, or -1 for automatic scaling
-	float lineWrap = 0.0f;					 //the maximum number of pixels the text can extend before wrapping, to 0.0 if no wrapping is desired
-	int align = 0;							 //how to align the text when wrapping: 0 = align left, 1 = align right, 2 = align center
-	float thickness = 0.5f;					 //the thickness of the text
-	float softness = 0.05f;					 //the softness of the text's edges
+	float scale = 1.0f;                      //the scale of the text, or -1 for automatic scaling
+	float lineWrap = 0.0f;                   //the maximum number of pixels the text can extend before wrapping, to 0.0 if no wrapping is desired
+	int align = 0;                           //how to align the text when wrapping: 0 = align left, 1 = align right, 2 = align center
+	float thickness = 0.5f;                  //the thickness of the text
+	float softness = 0.05f;                  //the softness of the text's edges
 
 	//outline parameters:
 	DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 1.0f}; //the color of the text's outline
-	float outlineThickness = 1.0f;					//the thickness at which the text's outline begins
-	float outlineSoftness = 0.05f;					//the softness of the outline's edges
+	float outlineThickness = 1.0f;                  //the thickness at which the text's outline begins
+	float outlineSoftness = 0.05f;                  //the softness of the outline's edges
 
 	DNUItext() = default;
-	DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string text, int font, DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, float scale = 1.0f, float lineWrap = 0.0f, int align = 0, float thickness = 0.5f, float softness = 0.05f, DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 0.0f}, float outlineThickness = 1.0f, float outlineSoftness = 0.05f);
+	DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string text, DNUIfont* font, DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, float scale = 1.0f, float lineWrap = 0.0f, int align = 0, float thickness = 0.5f, float softness = 0.05f, DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 0.0f}, float outlineThickness = 1.0f, float outlineSoftness = 0.05f);
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void render(float parentAlphaMult);

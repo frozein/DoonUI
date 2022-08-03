@@ -157,7 +157,7 @@ void DNUIbutton::handle_event(DNUIevent event)
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string txt, int fnt, DNvec4 col, float scl, float lnW, int algn, float thick, float soft, DNvec4 outlineCol, float outlineThick, float outlineSoft)
+DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string txt, DNUIfont* fnt, DNvec4 col, float scl, float lnW, int algn, float thick, float soft, DNvec4 outlineCol, float outlineThick, float outlineSoft)
 {
 	xPos = x;
 	yPos = y;
@@ -204,7 +204,7 @@ void DNUItext::render(float parentAlphaMult)
 {
 	DNvec4 renderCol = {color.x, color.y, color.z, color.w * alphaMult * parentAlphaMult};
 	DNvec4 outlineRenderCol = {outlineColor.x, outlineColor.y, outlineColor.z, outlineColor.w * alphaMult * parentAlphaMult};
-	if(font >= 0)
+	if(font != nullptr)
 		DNUI_draw_string(text.c_str(), font, renderPos, renderScale, renderW, align, renderCol, thickness, softness, outlineRenderCol, outlineThickness, outlineSoftness);
 
 	DNUIelement::render(parentAlphaMult);

@@ -79,7 +79,7 @@ int main()
 	//initialize DNUI:
 	//---------------------------------
 	DNUI_init(windowSize.x, windowSize.y);
-	int arialFont = DNUI_load_font("arial.ttf", 72);
+	DNUIfont* arialFont = DNUI_load_font("arial.ttf", 72);
 
 	//create test layout:
 	//---------------------------------
@@ -99,16 +99,16 @@ int main()
 	buttonHoldTransition.set_target_float(2.5f, offsetof(DNUIbutton, angle));
 
 	DNUIbutton baseButton = DNUIbutton(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f , DNUIcoordinate::CENTER_CENTER), 
-									   DNUIcoordinate(DNUIcoordinate::PIXELS  , 20.0f, DNUIcoordinate::CENTER_MIN),
-									   DNUIdimension(DNUIdimension::RELATIVE, 0.1f), DNUIdimension(DNUIdimension::ASPECT, 1.0f),
-									   button_callback, 0, -1, {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, 0.0f, 
-									   {0.0f, 1.0f, 1.0f, 1.0f}, 5.0f,
-									   buttonBaseTransition, buttonHoverTransition, buttonHoldTransition);
+	                                   DNUIcoordinate(DNUIcoordinate::PIXELS  , 20.0f, DNUIcoordinate::CENTER_MIN),
+	                                   DNUIdimension(DNUIdimension::RELATIVE, 0.1f), DNUIdimension(DNUIdimension::ASPECT, 1.0f),
+	                                   button_callback, 0, -1, {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, 0.0f, 
+	                                   {0.0f, 1.0f, 1.0f, 1.0f}, 5.0f,
+	                                   buttonBaseTransition, buttonHoverTransition, buttonHoldTransition);
 
 	DNUItext baseText = DNUItext(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f , DNUIcoordinate::CENTER_CENTER), 
-								 DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER),
-								 DNUIdimension(DNUIdimension::RELATIVE, 0.4f),
-								 "0", arialFont);
+	                             DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER),
+	                             DNUIdimension(DNUIdimension::RELATIVE, 0.4f),
+	                             "0", arialFont);
 
 	for(int i = 1; i <= 5; i++)
 	{
@@ -124,23 +124,23 @@ int main()
 	}
 
 	DNUIbox* sidePanel = new DNUIbox(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN),
-									 DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER),
-									 DNUIdimension(DNUIdimension::RELATIVE, 0.2f), DNUIdimension(DNUIdimension::SPACE, 40.0f),
-									 -1, {0.0f, 0.0f, 1.0f, 1.0f}, 40.0f, 0.0f);
+	                                 DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER),
+	                                 DNUIdimension(DNUIdimension::RELATIVE, 0.2f), DNUIdimension(DNUIdimension::SPACE, 40.0f),
+	                                 -1, {0.0f, 0.0f, 1.0f, 1.0f}, 40.0f, 0.0f);
 
 	DNUItext* sidePanelText = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), 
-										   DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 
-										   DNUIdimension(DNUIdimension::SPACE, 40.0f), 
-										   "A simple and efficient method is presented which allows improved rendering of glyphs composed of curved and linear elements. A distance field is generated from a high resolution image, and then stored into a channel of a lower-resolution texture. In the simplest case, this texture can then be rendered simply by using the alphatesting and alpha-thresholding feature of modern GPUs, without a custom shader.",
-										   arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 300.0f);
+	                                       DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 
+	                                       DNUIdimension(DNUIdimension::SPACE, 40.0f), 
+	                                       "A simple and efficient method is presented which allows improved rendering of glyphs composed of curved and linear elements. A distance field is generated from a high resolution image, and then stored into a channel of a lower-resolution texture. In the simplest case, this texture can then be rendered simply by using the alphatesting and alpha-thresholding feature of modern GPUs, without a custom shader.",
+	                                       arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.5f, 300.0f);
 
 	sidePanel->children.push_back(sidePanelText);
 	baseElement.children.push_back(sidePanel);
 
 	DNUItext* fancyText = new DNUItext(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.6f , DNUIcoordinate::CENTER_CENTER),
-									   DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.55f, DNUIcoordinate::CENTER_CENTER),
-									   DNUIdimension(DNUIdimension::RELATIVE, 0.6f),
-									   "DoonUI", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 1.0f, 0.0f, 0, 0.65f, 0.5f, {1.0f, 0.2f, 1.0f, 1.0f}, 0.5f, 0.05f);
+	                                   DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.55f, DNUIcoordinate::CENTER_CENTER),
+	                                   DNUIdimension(DNUIdimension::RELATIVE, 0.6f),
+	                                   "DoonUI", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 1.0f, 0.0f, 0, 0.65f, 0.5f, {1.0f, 0.2f, 1.0f, 1.0f}, 0.5f, 0.05f);
 
 	baseElement.children.push_back(fancyText);
 
