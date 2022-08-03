@@ -471,7 +471,7 @@ void DNUI_draw_string_simple(const char* text, int font, DNvec2 pos, float scale
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad)
+void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad, DNvec4 outlineColor, float outlineThickness)
 {
 	DNmat3 model = DN_mat3_translate(DN_MAT3_IDENTITY, (DNvec2){center.x, center.y});
 	model = DN_mat3_rotate(model, angle);
@@ -486,15 +486,17 @@ void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, 
 	glUniform2fv(glGetUniformLocation(rectProgram, "size"), 1, (GLfloat*)&size);
 	glUniform1f(glGetUniformLocation(rectProgram, "cornerRad"), cornerRad);
 
+	glUniform4fv(glGetUniformLocation(rectProgram, "outlineColor"), 1, (GLfloat*)&outlineColor);
+	glUniform1f(glGetUniformLocation(rectProgram, "outlineThickness"), outlineThickness);
+
+	glUniform1ui(glGetUniformLocation(rectProgram, "useTex"), textureHandle >= 0);
+	glUniform1i(glGetUniformLocation(rectProgram, "tex"), 0);
+
 	if(textureHandle >= 0)
 	{
-		glUniform1ui(glGetUniformLocation(rectProgram, "useTex"), true);
-		glUniform1i(glGetUniformLocation(rectProgram, "tex"), 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureHandle);
 	}
-	else
-		glUniform1ui(glGetUniformLocation(rectProgram, "useTex"), false);
 
 	glBindVertexArray(rectArray);
 	glDrawArrays(GL_TRIANGLES, 0, 6);

@@ -51,13 +51,15 @@ public:
 class DNUIbox : public DNUIelement
 {
 public:
-	DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}; //the box's color
-	float cornerRadius = 0.0f;				 //the radius of the box's corners, in pixels
-	float angle = 0.0f;						 //the box's rotation, in degrees
-	int texture = -1;						 //the openGL texture handle to use when rendering, or -1 if no texture is desired
+	int texture = -1;                               //the openGL texture handle to use when rendering, or -1 if no texture is desired
+	DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f};        //the box's color
+	float cornerRadius = 0.0f;                      //the radius of the box's corners, in pixels
+	float angle = 0.0f;                             //the box's rotation, in degrees
+	DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 1.0f}; //the box's outline color
+	float outlineThickness = 0.0f;                  //the box's outline thickness, in pixels
 
 	DNUIbox() = default;
-	DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col = {1.0f, 1.0f, 1.0f, 1.0f}, float cornerRad = 0.0f, float angle = 0.0f, int tex = -1);
+	DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, int tex = -1, DNvec4 col = {1.0f, 1.0f, 1.0f, 1.0f}, float cornerRad = 0.0f, float angle = 0.0f, DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 1.0f}, float outlineThickness = 0.0f);
 
 	void render(float parentAlphaMult);
 };
@@ -80,7 +82,7 @@ public:
 	DNUItransition holdTransition;  //the transition that plays when the button is held down
 
 	DNUIbutton() = default;
-	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, void (*buttonCallback)(int) = nullptr, int callbackID = 0, DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, float cornerRad = 0.0f, float angle = 0.0f, int tex = -1, DNUItransition base = DNUItransition(), DNUItransition hover = DNUItransition(), DNUItransition hold = DNUItransition());
+	DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, void (*buttonCallback)(int) = nullptr, int callbackID = 0, int tex = -1, DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, float cornerRad = 0.0f, float angle = 0.0f, DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 1.0f}, float outlineThickness = 0.0f, DNUItransition base = DNUItransition(), DNUItransition hover = DNUItransition(), DNUItransition hold = DNUItransition());
 
 	/* Call whenever the cursor position or the state of the mouse button changes, will NOT invoke any of the button callback functions, for that, a DNUIevent must be sent
 	 * @param pos the mouse's screen position, with {0, 0} denoting the center of the screen

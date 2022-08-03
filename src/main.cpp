@@ -101,7 +101,8 @@ int main()
 	DNUIbutton baseButton = DNUIbutton(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f , DNUIcoordinate::CENTER_CENTER), 
 									   DNUIcoordinate(DNUIcoordinate::PIXELS  , 20.0f, DNUIcoordinate::CENTER_MIN),
 									   DNUIdimension(DNUIdimension::RELATIVE, 0.1f), DNUIdimension(DNUIdimension::ASPECT, 1.0f),
-									   button_callback, 0, {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, 0.0f, -1, 
+									   button_callback, 0, -1, {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, 0.0f, 
+									   {0.0f, 1.0f, 1.0f, 1.0f}, 5.0f,
 									   buttonBaseTransition, buttonHoverTransition, buttonHoldTransition);
 
 	DNUItext baseText = DNUItext(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f , DNUIcoordinate::CENTER_CENTER), 
@@ -125,7 +126,7 @@ int main()
 	DNUIbox* sidePanel = new DNUIbox(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN),
 									 DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.5f, DNUIcoordinate::CENTER_CENTER),
 									 DNUIdimension(DNUIdimension::RELATIVE, 0.2f), DNUIdimension(DNUIdimension::SPACE, 40.0f),
-									 {0.0f, 0.0f, 1.0f, 1.0f}, 40.0f, 0.0f, -1);
+									 -1, {0.0f, 0.0f, 1.0f, 1.0f}, 40.0f, 0.0f);
 
 	DNUItext* sidePanelText = new DNUItext(DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MIN), 
 										   DNUIcoordinate(DNUIcoordinate::PIXELS, 20.0f, DNUIcoordinate::CENTER_MAX), 

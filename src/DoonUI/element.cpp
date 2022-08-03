@@ -80,24 +80,26 @@ void DNUIelement::set_transition(DNUItransition trans, float delay)
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUIbox::DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, DNvec4 col, float cornerRad, float agl, int tex) : DNUIelement::DNUIelement(x, y, w, h)
+DNUIbox::DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, int tex, DNvec4 col, float cornerRad, float agl, DNvec4 outlineCol, float outlineThick) : DNUIelement::DNUIelement(x, y, w, h)
 {
+	texture = tex;
 	color = col;
 	cornerRadius = cornerRad;
 	angle = agl;
-	texture = tex;
+	outlineColor = outlineCol;
+	outlineThickness = outlineThick;
 }
 
 void DNUIbox::render(float parentAlphaMult)
 {
 	DNvec4 renderCol = {color.x, color.y, color.z, color.w * alphaMult * parentAlphaMult};
-	DNUI_draw_rect(texture, renderPos, renderSize, angle, renderCol, cornerRadius);
+	DNUI_draw_rect(texture, renderPos, renderSize, angle, renderCol, cornerRadius, outlineColor, outlineThickness);
 	DNUIelement::render(parentAlphaMult);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUIbutton::DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, void (*buttonCallback)(int), int id, DNvec4 col, float cornerRad, float angle, int tex, DNUItransition base, DNUItransition hover, DNUItransition hold) : DNUIbox::DNUIbox(x, y, w, h, col, cornerRad, angle, tex)
+DNUIbutton::DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, void (*buttonCallback)(int), int id, int tex, DNvec4 col, float cornerRad, float angle, DNvec4 outlineCol, float outlineThick, DNUItransition base, DNUItransition hover, DNUItransition hold) : DNUIbox::DNUIbox(x, y, w, h, tex, col, cornerRad, angle, outlineCol, outlineThick)
 {
 	button_callback = buttonCallback;
 	callbackID = id;

@@ -84,8 +84,10 @@ void DNUI_draw_string_simple(const char* text, int font, DNvec2 pos, float scale
  * @param angle the angle, in degrees, to rotate the rectangle
  * @param color the color of the rectangle, in rgba format. If a texture is used, the final color will be the texture's color multiplied by this
  * @param cornerRad used to add rounded corners. denotes the radius of the rectangles corners, in pixels
+ * @param outlineColor the color of the rectangle's outline, if one is desired
+ * @param outlineThickness the thickness of the rectangle's outline, in pixels, or 0 if no outline is desired
  */
-void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad);
+void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad, DNvec4 outlineColor, float outlineThickness);
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
