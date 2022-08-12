@@ -3,6 +3,7 @@
 #include "math/vector.h"
 
 #include <stdio.h>
+#include <ctype.h>
 #include <malloc.h>
 #include <math.h>
 #include <string.h>
@@ -371,7 +372,7 @@ void DNUI_draw_string(const char* text, DNUIfont* font, DNvec2 pos, float scale,
 	{
 		char test = text[i];
 
-		if(text[i] == ' ')
+		if(isspace(text[i]))
 		{
 			lastSpace = i;
 			curWidth += font->glyphInfo[text[i]].advance * scale;
