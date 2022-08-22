@@ -18,9 +18,6 @@
 				"${workspaceFolder}\\..\\bin\\doonui_x64.exe",
 
 				"/Tc${workspaceFolder}\\glad.c",
-				"/Tc${workspaceFolder}\\DoonUI\\math\\vector.c",
-				"/Tc${workspaceFolder}\\DoonUI\\math\\matrix.c",
-				"/Tc${workspaceFolder}\\DoonUI\\math\\quaternion.c",
 				"/Tc${workspaceFolder}\\DoonUI\\render.c",
 				"/Tp${workspaceFolder}\\DoonUI\\element.cpp",
 				"/Tp${workspaceFolder}\\DoonUI\\utility.cpp",

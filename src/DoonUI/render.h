@@ -1,7 +1,12 @@
 #ifndef DNUI_RENDER_H
 #define DNUI_RENDER_H
 
-#include "math/common.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include "QuickMath/quickmath.h"
 #include <stdbool.h>
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -28,6 +33,12 @@ void DNUI_set_window_size(unsigned int w, unsigned int h);
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //TEXT RENDERING:
+
+//integer vector 2
+typedef struct DNivec2
+{
+	int x, y;
+} DNivec2;
 
 //represents a font for text rendering
 typedef struct DNUIfont
@@ -108,5 +119,9 @@ void DNUI_draw_string_simple(const char* text, DNUIfont* font, DNvec2 pos, float
 void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad, DNvec4 outlineColor, float outlineThickness);
 
 //--------------------------------------------------------------------------------------------------------------------------------//
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -3,12 +3,9 @@
 
 #include <string>
 #include <vector>
-#include "math/common.h"
+#include "QuickMath/quickmath.h"
 #include "utility.hpp"
-extern "C"
-{
-	#include "render.h"
-}
+#include "render.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //ELEMENT CLASS:

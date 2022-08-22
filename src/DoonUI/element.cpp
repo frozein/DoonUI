@@ -1,9 +1,5 @@
 #include "element.hpp"
-extern "C"
-{
-	#include "render.h"
-	#include "math/vector.h"
-}
+#include "render.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //HELPER FUNCTIONS:

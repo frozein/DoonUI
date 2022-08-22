@@ -1,9 +1,5 @@
 #include "utility.hpp"
 #include "element.hpp"
-extern "C"
-{
-	#include "math/vector.h"
-}
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
@@ -201,9 +197,24 @@ void DNUItransition::init(DNUIelement* element, float d)
 	}
 }
 
-float _DNUI_lerp(float a, float b, float alpha)
+static inline float _DNUI_lerp(float a, float b, float alpha)
 {
 	return a + alpha * (b - a);
+}
+
+static inline DNvec2 _DNUI_vec2_lerp(DNvec2 a, DNvec2 b, float alpha)
+{
+	return {_DNUI_lerp(a.x, b.x, alpha), _DNUI_lerp(a.y, b.y, alpha)};
+}
+
+static inline DNvec3 _DNUI_vec3_lerp(DNvec3 a, DNvec3 b, float alpha)
+{
+	return {_DNUI_lerp(a.x, b.x, alpha), _DNUI_lerp(a.y, b.y, alpha), _DNUI_lerp(a.z, b.z, alpha)};
+}
+
+static inline DNvec4 _DNUI_vec4_lerp(DNvec4 a, DNvec4 b, float alpha)
+{
+	return {_DNUI_lerp(a.x, b.x, alpha), _DNUI_lerp(a.y, b.y, alpha), _DNUI_lerp(a.z, b.z, alpha), _DNUI_lerp(a.w, b.w, alpha)};
 }
 
 bool DNUItransition::update(float dt, DNUIelement* element, DNvec2 parentSize, DNvec2 size)
@@ -279,13 +290,13 @@ bool DNUItransition::update(float dt, DNUIelement* element, DNvec2 parentSize, D
 			*(float*)ptr = finished ? comp.floating.target : _DNUI_lerp(comp.floating.original, comp.floating.target, correctedAlpha);
 			break;
 		case DNUItransition::Component::VEC2:
-			*(DNvec2*)ptr = finished ? comp.vector2.target : DN_vec2_lerp(comp.vector2.original, comp.vector2.target, correctedAlpha);
+			*(DNvec2*)ptr = finished ? comp.vector2.target : _DNUI_vec2_lerp(comp.vector2.original, comp.vector2.target, correctedAlpha);
 			break;
 		case DNUItransition::Component::VEC3:
-			*(DNvec3*)ptr = finished ? comp.vector3.target : DN_vec3_lerp(comp.vector3.original, comp.vector3.target, correctedAlpha);
+			*(DNvec3*)ptr = finished ? comp.vector3.target : _DNUI_vec3_lerp(comp.vector3.original, comp.vector3.target, correctedAlpha);
 			break;
 		case DNUItransition::Component::VEC4:
-			*(DNvec4*)ptr = finished ? comp.vector4.target : DN_vec4_lerp(comp.vector4.original, comp.vector4.target, correctedAlpha);
+			*(DNvec4*)ptr = finished ? comp.vector4.target : _DNUI_vec4_lerp(comp.vector4.original, comp.vector4.target, correctedAlpha);
 			break;
 		default:
 			break;

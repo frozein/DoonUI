@@ -2,7 +2,7 @@
 #define DNUI_UTILITY_H
 
 #include <vector>
-#include "math/common.h"
+#include "QuickMath/quickmath.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //DIMENSION/POSITION STRUCTS:

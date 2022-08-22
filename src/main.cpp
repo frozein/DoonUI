@@ -4,11 +4,8 @@
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 #include "DoonUI/element.hpp"
-extern "C"
-{
-	#include "DoonUI/render.h"
-	#include "DoonUI/math/vector.h"
-}
+#include "QuickMath/quickmath.h"
+#include "DoonUI/render.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 

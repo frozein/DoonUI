@@ -1,6 +1,4 @@
 #include "render.h"
-#include "math/matrix.h"
-#include "math/vector.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -127,7 +125,7 @@ void DNUI_set_window_size(unsigned int w, unsigned int h)
 
 	//generate new projection matrix:
 	//---------------------------------
-	projectionMat = DN_MAT3_IDENTITY;
+	projectionMat = DN_mat3_identity();
 	projectionMat.m[0][0] = 2.0f / w;
 	projectionMat.m[1][1] = 2.0f / h;
 }
@@ -434,9 +432,9 @@ void DNUI_draw_string_simple(const char* text, DNUIfont* font, DNvec2 pos, float
 
 void DNUI_draw_rect(int textureHandle, DNvec2 center, DNvec2 size, float angle, DNvec4 color, float cornerRad, DNvec4 outlineColor, float outlineThickness)
 {
-	DNmat3 model = DN_mat3_translate(DN_MAT3_IDENTITY, (DNvec2){center.x, center.y});
-	model = DN_mat3_rotate(model, angle);
-	model = DN_mat3_scale(model, (DNvec2){size.x * 0.5f, size.y * 0.5f});
+	DNmat3 model = DN_mat3_translate(center);
+	model = DN_mat3_mult(model, DN_mat3_rotate(angle));
+	model = DN_mat3_mult(model, DN_mat3_scale((DNvec2){size.x * 0.5f, size.y * 0.5f}));
 
 	model = DN_mat3_mult(projectionMat, model);
 
