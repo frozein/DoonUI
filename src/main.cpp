@@ -9,7 +9,7 @@
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNivec2 windowSize = {1280, 720};
+unsigned int windowW = 1280, windowH = 720;
 DNUIelement baseElement = DNUIelement(); //create fullscreen element to serve as the "base"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -18,7 +18,8 @@ void window_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 	DNUI_set_window_size(width, height);
-	windowSize = {width, height};
+	windowW = width;
+	windowH = height;
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -46,7 +47,7 @@ int main()
 
 	//create and init window:
 	//---------------------------------
-	GLFWwindow* window = glfwCreateWindow(windowSize.x, windowSize.y, "DoonUI", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(windowW, windowH, "DoonUI", NULL, NULL);
 	if(window == NULL)
 	{
 		printf("Failed to create GLFW window\n");
@@ -65,7 +66,7 @@ int main()
 
 	//set gl viewport:
 	//---------------------------------
-	glViewport(0, 0, windowSize.x, windowSize.y);
+	glViewport(0, 0, windowW, windowH);
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
@@ -75,7 +76,7 @@ int main()
 
 	//initialize DNUI:
 	//---------------------------------
-	DNUI_init(windowSize.x, windowSize.y);
+	DNUI_init(windowW, windowH);
 	DNUIfont* arialFont = DNUI_load_font("arial.ttf", 72);
 
 	//create test layout:
@@ -157,7 +158,7 @@ int main()
 		//---------------------------------
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
-		DNUIbutton::set_mouse_state({(float)mouseX - windowSize.x * 0.5f, (float)mouseY - windowSize.y * 0.5f}, glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+		DNUIbutton::set_mouse_state({(float)mouseX - windowW * 0.5f, (float)mouseY - windowH * 0.5f}, glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
 
 		//clear rendering buffer:
 		//---------------------------------
@@ -166,7 +167,7 @@ int main()
 
 		//render + draw ui:
 		//---------------------------------
-		baseElement.update(deltaTime, {0.0f, 0.0f}, {(float)windowSize.x, (float)windowSize.y});
+		baseElement.update(deltaTime, {0.0f, 0.0f}, {(float)windowW, (float)windowH});
 		baseElement.render(1.0f);
 
 		//finish rendering and swap:

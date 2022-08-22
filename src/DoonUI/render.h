@@ -34,18 +34,12 @@ void DNUI_set_window_size(unsigned int w, unsigned int h);
 //--------------------------------------------------------------------------------------------------------------------------------//
 //TEXT RENDERING:
 
-//integer vector 2
-typedef struct DNivec2
-{
-	int x, y;
-} DNivec2;
-
 //represents a font for text rendering
 typedef struct DNUIfont
 {
-	unsigned int textureAtlas; //the openGL handle to the texture atlas
-	DNivec2 atlasSize;         //the texture atlas' size, in pixels
-	float maxBearing;          //the maximum bearing of the character, in pixels
+	unsigned int textureAtlas;   //the openGL handle to the texture atlas
+	unsigned int atlasW, atlasH; //the texture atlas' size, in pixels
+	float maxBearing;            //the maximum bearing of the character, in pixels
 
 	struct
 	{
