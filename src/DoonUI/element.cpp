@@ -189,7 +189,7 @@ void DNUItext::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 		}
 
 		renderW = 0.0f;
-		height.pixelSize = font->atlasSize.y * renderScale;
+		height.pixelSize = font->atlasH * renderScale;
 	}
 	else
 	{
