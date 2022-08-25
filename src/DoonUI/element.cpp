@@ -175,23 +175,32 @@ DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::
 
 void DNUItext::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
+	height.type = DNUIdimension::PIXELS;
 	if(lineWrap <= 0.0f)
 	{
-		renderScale = renderSize.x / DNUI_string_render_size(text.c_str(), font, 1.0f, 0.0f).x;
+		if(scale <= 0.0f)
+			renderScale = renderSize.x / DNUI_string_render_size(text.c_str(), font, 1.0f, 0.0f).x;
+		else
+		{
+			renderScale = scale;
+
+			width.type = DNUIdimension::PIXELS;
+			width.pixelSize = DNUI_string_render_size(text.c_str(), font, renderScale, 0.0f).x;
+		}
+
 		renderW = 0.0f;
+		height.pixelSize = font->atlasSize.y * renderScale;
 	}
 	else
 	{
-		renderW = renderSize.x;
-
 		if(scale <= 0.0f)
 			renderScale = renderSize.x / lineWrap;
 		else
 			renderScale = scale;
-	}
 
-	height.type = DNUIdimension::PIXELS;
-	height.pixelSize = DNUI_string_render_size(text.c_str(), font, renderScale, renderW).y;
+		renderW = renderSize.x;
+		height.pixelSize = DNUI_string_render_size(text.c_str(), font, renderScale, renderW).y;
+	}
 
 	DNUIelement::update(dt, parentPos, parentSize);
 }

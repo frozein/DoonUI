@@ -137,7 +137,7 @@ int main()
 	DNUItext* fancyText = new DNUItext(DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.6f , DNUIcoordinate::CENTER_CENTER),
 	                                   DNUIcoordinate(DNUIcoordinate::RELATIVE, 0.55f, DNUIcoordinate::CENTER_CENTER),
 	                                   DNUIdimension(DNUIdimension::RELATIVE, 0.6f),
-	                                   "DoonUI", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 1.0f, 0.0f, 0, 0.65f, 0.5f, {1.0f, 0.2f, 1.0f, 1.0f}, 0.5f, 0.05f);
+	                                   "DoonUI", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 0.65f, 0.5f, {1.0f, 0.2f, 1.0f, 1.0f}, 0.5f, 0.05f);
 
 	baseElement.children.push_back(fancyText);
 
