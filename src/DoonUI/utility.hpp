@@ -7,8 +7,11 @@
 //--------------------------------------------------------------------------------------------------------------------------------//
 //DIMENSION/POSITION STRUCTS:
 
+namespace dnui
+{
+
 //represents a position for a DNUIelement
-struct DNUIcoordinate
+struct Coordinate
 {
 	//determines how the element will be positioned
 	enum Type
@@ -31,14 +34,14 @@ struct DNUIcoordinate
 		float pixelPos;
 	};
 
-	DNUIcoordinate() = default;
-	DNUIcoordinate(DNUIcoordinate::Type type, float param, DNUIcoordinate::Center center);
+	Coordinate() = default;
+	Coordinate(Coordinate::Type type, float param, Coordinate::Center center);
 
 	//returns the position relative to the screen, in pixels
 	float calc_render_pos(float parentPos, float parentSize, float size);
 };
 
-struct DNUIdimension
+struct Dimension
 {
 	//determines how the element will be sized
 	enum Type
@@ -57,8 +60,8 @@ struct DNUIdimension
 		float emptyPixels;
 	};
 
-	DNUIdimension() = default;
-	DNUIdimension(DNUIdimension::Type type, float param);
+	Dimension() = default;
+	Dimension(Dimension::Type type, float param);
 
 	//returns the size, in pixels
 	float calc_render_size(float parentSize);
@@ -67,7 +70,7 @@ struct DNUIdimension
 //--------------------------------------------------------------------------------------------------------------------------------//
 //EVENT STRUCT:
 
-struct DNUIevent
+struct Event
 {
 	enum Type
 	{
@@ -77,18 +80,58 @@ struct DNUIevent
 
 	//data here
 
-	DNUIevent() = default;
-	DNUIevent(DNUIevent::Type type);
+	Event() = default;
+	Event(Event::Type type);
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //TRANSITION CLASS:
 
-class DNUIelement;
+class Element;
 
 //represents a transition for a UI element, facilitates interpolating to a new state
-class DNUItransition
+class Transition
 {
+public:
+	float m_time = 1000.0f; //how long the transition will take, in milliseconds
+
+	//determines how the transition will be interpolated
+	enum InterpolationType
+	{
+		LINEAR,
+		QUADRATIC,
+		CUBIC,
+		EXPONENTIAL
+	} m_interpolateType = LINEAR;
+
+	Transition() = default;
+	Transition(float time, InterpolationType interpolate);
+
+	//sets the target x position
+	void set_target_x(Coordinate x);
+	//sets the target y position
+	void set_target_y(Coordinate y);
+	//sets the target width
+	void set_target_w(Dimension  w);
+	//sets the target height
+	void set_target_h(Dimension  h);
+	//sets the target alpha multiplier
+	void set_target_alphamult(float a);
+
+	//sets a target float value, use offsetof to determine the offset
+	void set_target_float(float target, size_t offset);
+	//sets a target vec2 value, use offsetof to determine the offset
+	void set_target_vec2(DNvec2 target, size_t offset);
+	//sets a target vec3 value, use offsetof to determine the offset
+	void set_target_vec3(DNvec3 target, size_t offset);
+	//sets a target vec4 value, use offsetof to determine the offset
+	void set_target_vec4(DNvec4 target, size_t offset);
+
+	//initializes the transition, call before calling update(). the animation will begin after delay() milliseconds
+	void init(Element* element, float delay);
+	//updates the transition
+	bool update(float dt, Element* element, DNvec2 parentSize, DNvec2 size);
+
 private:
 	struct Component
 	{
@@ -100,23 +143,23 @@ private:
 			VEC2,
 			VEC3,
 			VEC4
-		} type;
+		} m_type;
 
-		size_t offset;
+		size_t m_offset;
 
 		union
 		{
 			struct 
 			{
-				DNUIcoordinate original;
-				DNUIcoordinate target;
+				Coordinate original;
+				Coordinate target;
 				bool x;
 			} coordinate;
 
 			struct 
 			{
-				DNUIdimension original;
-				DNUIdimension target;
+				Dimension original;
+				Dimension target;
 				bool w;
 			} dimension;
 
@@ -146,52 +189,20 @@ private:
 		};
 	};
 
-	std::vector<Component> components;
-	float alpha = 0.0f;
-	float delay = 0.0f;
+	std::vector<Component> m_components;
+	float m_alpha = 0.0f;
+	float m_delay = 0.0f;
 
 	//returns the index of the specified component, will push_back the vector and return the new index if an existing component was not found
 	int get_component(Component::DataType type, size_t offset);
 
-public:
-	float time = 1000.0f; //how long the transition will take, in milliseconds
-
-	//determines how the transition will be interpolated
-	enum InterpolationType
-	{
-		LINEAR,
-		QUADRATIC,
-		CUBIC,
-		EXPONENTIAL
-	} interpolateType = LINEAR;
-
-	DNUItransition() = default;
-	DNUItransition(float time, InterpolationType interpolate);
-
-	//sets the target x position
-	void set_target_x(DNUIcoordinate x);
-	//sets the target y position
-	void set_target_y(DNUIcoordinate y);
-	//sets the target width
-	void set_target_w(DNUIdimension  w);
-	//sets the target height
-	void set_target_h(DNUIdimension  h);
-	//sets the target alpha multiplier
-	void set_target_alphamult(float a);
-
-	//sets a target float value, use offsetof to determine the offset
-	void set_target_float(float target, size_t offset);
-	//sets a target vec2 value, use offsetof to determine the offset
-	void set_target_vec2(DNvec2 target, size_t offset);
-	//sets a target vec3 value, use offsetof to determine the offset
-	void set_target_vec3(DNvec3 target, size_t offset);
-	//sets a target vec4 value, use offsetof to determine the offset
-	void set_target_vec4(DNvec4 target, size_t offset);
-
-	//initializes the transition, call before calling update(). the animation will begin after delay() milliseconds
-	void init(DNUIelement* element, float delay);
-	//updates the transition
-	bool update(float dt, DNUIelement* element, DNvec2 parentSize, DNvec2 size);
+	//linear interpolation functions:
+	float lerp(float a, float b, float alpha);
+	DNvec2 lerp(DNvec2 a, DNvec2 b, float alpha);
+	DNvec3 lerp(DNvec3 a, DNvec3 b, float alpha);
+	DNvec4 lerp(DNvec4 a, DNvec4 b, float alpha);
 };
+
+}; //namespace dnui
 
 #endif

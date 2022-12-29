@@ -2,215 +2,210 @@
 #include "render.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
-//HELPER FUNCTIONS:
 
-//calculates the position an element should be rendered at
-DNvec2 _DNUI_calc_render_pos(DNvec2 parentPos, DNvec2 parentSize, DNvec2 size, DNUIcoordinate x, DNUIcoordinate y)
+dnui::Element::Element(Coordinate x, Coordinate y, Dimension w, Dimension h)
 {
-	return {x.calc_render_pos(parentPos.x, parentSize.x, size.x), y.calc_render_pos(parentPos.y, parentSize.y, size.y)};
+	m_xPos = x;
+	m_yPos = y;
+	m_width = w;
+	m_height = h;
 }
 
-//calculates the size an element should be rendered at
-DNvec2 _DNUI_calc_render_size(DNvec2 parentSize, DNUIdimension width, DNUIdimension height)
+dnui::Element::~Element()
 {
-	if(width.type == DNUIdimension::ASPECT)
+	for(int i = 0; i < m_children.size(); i++)
+		delete m_children[i];
+}
+
+void dnui::Element::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
+{
+	calc_render_size(parentSize);
+	calc_render_pos(parentPos, parentSize);
+
+	if(m_activeTransition)
+		m_activeTransition = m_transition.update(dt, this, parentSize, m_renderSize);
+
+	for(int i = 0; i < m_children.size(); i++)
+		m_children[i]->update(dt, m_renderPos, m_renderSize);
+}
+
+void dnui::Element::render(float parentAlphaMult)
+{
+	for(int i = 0; i < m_children.size(); i++)
+		m_children[i]->render(m_alphaMult * parentAlphaMult);
+}
+
+void dnui::Element::handle_event(Event event)
+{
+	for(int i = 0; i < m_children.size(); i++)
+		m_children[i]->handle_event(event);
+}
+
+void dnui::Element::set_transition(Transition trans, float delay)
+{
+	m_activeTransition = true;
+	m_transition = trans;
+	m_transition.init(this, delay);
+}
+
+void dnui::Element::calc_render_size(DNvec2 parentSize)
+{
+	if(m_width.type == Dimension::ASPECT)
 	{
-		float h = height.calc_render_size(parentSize.y);
-		return {h * width.aspectRatio, h};
+		float h = m_height.calc_render_size(parentSize.y);
+		m_renderSize = {h * m_width.aspectRatio, h};
 	}
-	else if(height.type == DNUIdimension::ASPECT)
+	else if(m_height.type == Dimension::ASPECT)
 	{
-		float w = width.calc_render_size(parentSize.x);
-		return {w, w * height.aspectRatio};
+		float w = m_width.calc_render_size(parentSize.x);
+		m_renderSize = {w, w * m_height.aspectRatio};
 	}
 	else
-		return {width.calc_render_size(parentSize.x), height.calc_render_size(parentSize.y)};
+		m_renderSize = {m_width.calc_render_size(parentSize.x), m_height.calc_render_size(parentSize.y)};
+}
+
+void dnui::Element::calc_render_pos(DNvec2 parentPos, DNvec2 parentSize)
+{
+	m_renderPos = {m_xPos.calc_render_pos(parentPos.x, parentSize.x, m_renderSize.x), m_yPos.calc_render_pos(parentPos.y, parentSize.y, m_renderSize.y)};
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUIelement::DNUIelement(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h)
+dnui::Box::Box(Coordinate x, Coordinate y, Dimension w, Dimension h, int tex, DNvec4 col, float cornerRad, float agl, DNvec4 outlineCol, float outlineThick) : dnui::Element::Element(x, y, w, h)
 {
-	xPos = x;
-	yPos = y;
-	width = w;
-	height = h;
+	m_texture = tex;
+	m_color = col;
+	m_cornerRadius = cornerRad;
+	m_angle = agl;
+	m_outlineColor = outlineCol;
+	m_outlineThickness = outlineThick;
 }
 
-DNUIelement::~DNUIelement()
+void dnui::Box::render(float parentAlphaMult)
 {
-	for(int i = 0; i < children.size(); i++)
-		delete children[i];
-}
-
-void DNUIelement::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
-{
-	renderSize = _DNUI_calc_render_size(parentSize, width, height);
-	renderPos = _DNUI_calc_render_pos(parentPos, parentSize, renderSize, xPos, yPos);
-
-	if(activeTransition)
-		activeTransition = transition.update(dt, this, parentSize, renderSize);
-
-	for(int i = 0; i < children.size(); i++)
-		children[i]->update(dt, renderPos, renderSize);
-}
-
-void DNUIelement::render(float parentAlphaMult)
-{
-	for(int i = 0; i < children.size(); i++)
-		children[i]->render(alphaMult * parentAlphaMult);
-}
-
-void DNUIelement::handle_event(DNUIevent event)
-{
-	for(int i = 0; i < children.size(); i++)
-		children[i]->handle_event(event);
-}
-
-void DNUIelement::set_transition(DNUItransition trans, float delay)
-{
-	activeTransition = true;
-	transition = trans;
-	transition.init(this, delay);
+	DNvec4 renderCol = {m_color.x, m_color.y, m_color.z, m_color.w * m_alphaMult * parentAlphaMult};
+	DNUI_draw_rect(m_texture, m_renderPos, m_renderSize, m_angle, renderCol, m_cornerRadius, m_outlineColor, m_outlineThickness);
+	dnui::Element::render(parentAlphaMult);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUIbox::DNUIbox(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, int tex, DNvec4 col, float cornerRad, float agl, DNvec4 outlineCol, float outlineThick) : DNUIelement::DNUIelement(x, y, w, h)
+dnui::Button::Button(Coordinate x, Coordinate y, Dimension w, Dimension h, void (*buttonCallback)(int), int id, int tex, DNvec4 col, float cornerRad, float angle, DNvec4 outlineCol, float outlineThick, Transition base, Transition hover, Transition hold) : dnui::Box::Box(x, y, w, h, tex, col, cornerRad, angle, outlineCol, outlineThick)
 {
-	texture = tex;
-	color = col;
-	cornerRadius = cornerRad;
-	angle = agl;
-	outlineColor = outlineCol;
-	outlineThickness = outlineThick;
+	m_button_callback = buttonCallback;
+	m_callbackID = id;
+	m_baseTransition = base;
+	m_hoverTransition = hover;
+	m_holdTransition = hold;
 }
 
-void DNUIbox::render(float parentAlphaMult)
+void dnui::Button::set_mouse_state(DNvec2 pos, bool pressed)
 {
-	DNvec4 renderCol = {color.x, color.y, color.z, color.w * alphaMult * parentAlphaMult};
-	DNUI_draw_rect(texture, renderPos, renderSize, angle, renderCol, cornerRadius, outlineColor, outlineThickness);
-	DNUIelement::render(parentAlphaMult);
+	s_mousePos = pos;
+	s_mousePressed = pressed;
 }
 
-//--------------------------------------------------------------------------------------------------------------------------------//
-
-DNUIbutton::DNUIbutton(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension w, DNUIdimension h, void (*buttonCallback)(int), int id, int tex, DNvec4 col, float cornerRad, float angle, DNvec4 outlineCol, float outlineThick, DNUItransition base, DNUItransition hover, DNUItransition hold) : DNUIbox::DNUIbox(x, y, w, h, tex, col, cornerRad, angle, outlineCol, outlineThick)
+void dnui::Button::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
-	button_callback = buttonCallback;
-	callbackID = id;
-	baseTransition = base;
-	hoverTransition = hover;
-	holdTransition = hold;
-}
-
-void DNUIbutton::set_mouse_state(DNvec2 pos, bool pressed)
-{
-	mousePos = pos;
-	mousePressed = pressed;
-}
-
-void DNUIbutton::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
-{
-	if(mousePos.x >  renderPos.x - renderSize.x * 0.5f && mousePos.x <  renderPos.x + renderSize.x * 0.5f &&
-	   mousePos.y > -renderPos.y - renderSize.y * 0.5f && mousePos.y < -renderPos.y + renderSize.y * 0.5f)
+	if(s_mousePos.x >  m_renderPos.x - m_renderSize.x * 0.5f && s_mousePos.x <  m_renderPos.x + m_renderSize.x * 0.5f &&
+	   s_mousePos.y > -m_renderPos.y - m_renderSize.y * 0.5f && s_mousePos.y < -m_renderPos.y + m_renderSize.y * 0.5f)
 	{
-		if(mousePressed)
+		if(s_mousePressed)
 		{
-			if(curState != 2)
+			if(m_curState != 2)
 			{
-				curState = 2;
-				set_transition(holdTransition, 0.0f);
+				m_curState = 2;
+				set_transition(m_holdTransition, 0.0f);
 			}
 		}
-		else if(curState != 1)
+		else if(m_curState != 1)
 		{
-			curState = 1;
-			set_transition(hoverTransition, 0.0f);
+			m_curState = 1;
+			set_transition(m_hoverTransition, 0.0f);
 		}
 	}
-	else if(curState != 0)
+	else if(m_curState != 0)
 	{
-		curState = 0;
-		set_transition(baseTransition, 0.0f);
+		m_curState = 0;
+		set_transition(m_baseTransition, 0.0f);
 	}
 
-	DNUIbox::update(dt, parentPos, parentSize);
+	dnui::Box::update(dt, parentPos, parentSize);
 }
 
-void DNUIbutton::handle_event(DNUIevent event)
+void dnui::Button::handle_event(Event event)
 {
-	if(event.type == DNUIevent::MOUSE_RELEASE &&
-	   mousePos.x >  renderPos.x - renderSize.x * 0.5f && mousePos.x <  renderPos.x + renderSize.x * 0.5f &&
-	   mousePos.y > -renderPos.y - renderSize.y * 0.5f && mousePos.y < -renderPos.y + renderSize.y * 0.5f)
+	if(event.type == Event::MOUSE_RELEASE &&
+	   s_mousePos.x >  m_renderPos.x - m_renderSize.x * 0.5f && s_mousePos.x <  m_renderPos.x + m_renderSize.x * 0.5f &&
+	   s_mousePos.y > -m_renderPos.y - m_renderSize.y * 0.5f && s_mousePos.y < -m_renderPos.y + m_renderSize.y * 0.5f)
 	{
-		if(button_callback != nullptr)
-			button_callback(callbackID);
+		if(m_button_callback != nullptr)
+			m_button_callback(m_callbackID);
 	}
 
-	DNUIelement::handle_event(event);
+	dnui::Element::handle_event(event);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 
-DNUItext::DNUItext(DNUIcoordinate x, DNUIcoordinate y, DNUIdimension size, std::string txt, DNUIfont* fnt, DNvec4 col, float scl, float lnW, int algn, float thick, float soft, DNvec4 outlineCol, float outlineThick, float outlineSoft)
+dnui::Text::Text(Coordinate x, Coordinate y, Dimension size, std::string txt, DNUIfont* fnt, DNvec4 col, float scl, float lnW, int algn, float thick, float soft, DNvec4 outlineCol, float outlineThick, float outlineSoft)
 {
-	xPos = x;
-	yPos = y;
-	width = size;
-	height = DNUIdimension(DNUIdimension::RELATIVE, 1.0f);
+	m_xPos = x;
+	m_yPos = y;
+	m_width = size;
+	m_height = Dimension(Dimension::RELATIVE, 1.0f);
 
-	text = txt;
-	color = col;
-	font = fnt;
-	scale = scl;
-	lineWrap = lnW;
-	align = algn;
-	thickness = thick;
-	softness = soft;
-	outlineColor = outlineCol;
-	outlineThickness = outlineThick;
-	outlineSoftness = outlineSoft;
+	m_text = txt;
+	m_color = col;
+	m_font = fnt;
+	m_scale = scl;
+	m_lineWrap = lnW;
+	m_align = algn;
+	m_thickness = thick;
+	m_softness = soft;
+	m_outlineColor = outlineCol;
+	m_outlineThickness = outlineThick;
+	m_outlineSoftness = outlineSoft;
 }
 
-void DNUItext::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
+void dnui::Text::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
-	height.type = DNUIdimension::PIXELS;
-	if(lineWrap <= 0.0f)
+	m_height.type = Dimension::PIXELS;
+	if(m_lineWrap <= 0.0f)
 	{
-		if(scale <= 0.0f)
-			renderScale = renderSize.x / DNUI_string_render_size(text.c_str(), font, 1.0f, 0.0f).x;
+		if(m_scale <= 0.0f)
+			m_renderScale = m_renderSize.x / DNUI_string_render_size(m_text.c_str(), m_font, 1.0f, 0.0f).x;
 		else
 		{
-			renderScale = scale;
+			m_renderScale = m_scale;
 
-			width.type = DNUIdimension::PIXELS;
-			width.pixelSize = DNUI_string_render_size(text.c_str(), font, renderScale, 0.0f).x;
+			m_width.type = Dimension::PIXELS;
+			m_width.pixelSize = DNUI_string_render_size(m_text.c_str(), m_font, m_renderScale, 0.0f).x;
 		}
 
-		renderW = 0.0f;
-		height.pixelSize = font->atlasH * renderScale;
+		m_renderW = 0.0f;
+		m_height.pixelSize = m_font->atlasH * m_renderScale;
 	}
 	else
 	{
-		if(scale <= 0.0f)
-			renderScale = renderSize.x / lineWrap;
+		if(m_scale <= 0.0f)
+			m_renderScale = m_renderSize.x / m_lineWrap;
 		else
-			renderScale = scale;
+			m_renderScale = m_scale;
 
-		renderW = renderSize.x;
-		height.pixelSize = DNUI_string_render_size(text.c_str(), font, renderScale, renderW).y;
+		m_renderW = m_renderSize.x;
+		m_height.pixelSize = DNUI_string_render_size(m_text.c_str(), m_font, m_renderScale, m_renderW).y;
 	}
 
-	DNUIelement::update(dt, parentPos, parentSize);
+	dnui::Element::update(dt, parentPos, parentSize);
 }
 
-void DNUItext::render(float parentAlphaMult)
+void dnui::Text::render(float parentAlphaMult)
 {
-	DNvec4 renderCol = {color.x, color.y, color.z, color.w * alphaMult * parentAlphaMult};
-	DNvec4 outlineRenderCol = {outlineColor.x, outlineColor.y, outlineColor.z, outlineColor.w * alphaMult * parentAlphaMult};
-	if(font != nullptr)
-		DNUI_draw_string(text.c_str(), font, renderPos, renderScale, renderW, align, renderCol, thickness, softness, outlineRenderCol, outlineThickness, outlineSoftness);
+	DNvec4 renderCol = {m_color.x, m_color.y, m_color.z, m_color.w * m_alphaMult * parentAlphaMult};
+	DNvec4 outlineRenderCol = {m_outlineColor.x, m_outlineColor.y, m_outlineColor.z, m_outlineColor.w * m_alphaMult * parentAlphaMult};
+	if(m_font != nullptr)
+		DNUI_draw_string(m_text.c_str(), m_font, m_renderPos, m_renderScale, m_renderW, m_align, renderCol, m_thickness, m_softness, outlineRenderCol, m_outlineThickness, m_outlineSoftness);
 
-	DNUIelement::render(parentAlphaMult);
+	dnui::Element::render(parentAlphaMult);
 }
