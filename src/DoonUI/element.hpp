@@ -100,6 +100,10 @@ public:
 	 * @param pressed whether or not the main selection button is held down, used for animations
 	 */
 	static void set_mouse_state(DNvec2 pos, bool pressed);
+	/* Call whenever you change any of the buttons transitions in order to have them refresh immediately,
+	 * or they may take a while to show
+	*/
+	void update_transitions();
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void handle_event(Event event);

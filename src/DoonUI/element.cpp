@@ -105,6 +105,11 @@ void dnui::Button::set_mouse_state(DNvec2 pos, bool pressed)
 	s_mousePressed = pressed;
 }
 
+void dnui::Button::update_transitions()
+{
+	m_curState = -1;
+}
+
 void dnui::Button::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
 	if(s_mousePos.x >  m_renderPos.x - m_renderSize.x * 0.5f && s_mousePos.x <  m_renderPos.x + m_renderSize.x * 0.5f &&
