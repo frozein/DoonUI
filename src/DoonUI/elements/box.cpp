@@ -1,6 +1,8 @@
 #include "box.hpp"
 
-dnui::Box::Box(Coordinate x, Coordinate y, Dimension w, Dimension h, int tex, DNvec4 col, float cornerRad, float agl, DNvec4 outlineCol, float outlineThick) : dnui::Element::Element(x, y, w, h)
+dnui::Box::Box(Coordinate x, Coordinate y, Dimension w, Dimension h, 
+	int tex, DNvec4 col, float cornerRad, float agl, DNvec4 outlineCol, 
+	float outlineThick) : dnui::Element::Element(x, y, w, h)
 {
 	m_texture = tex;
 	m_color = col;

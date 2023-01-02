@@ -8,5 +8,6 @@
 #include "elements/box.hpp"
 #include "elements/button.hpp"
 #include "elements/text.hpp"
+#include "elements/slider.hpp"
 
 #endif

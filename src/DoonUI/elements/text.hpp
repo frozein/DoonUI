@@ -10,10 +10,6 @@ namespace dnui
 //a string of text
 class Text : public Element
 {
-private:
-	float m_renderScale; //the final scale of text
-	float m_renderW;     //the final maximum line width of the text, in pixels
-
 public:
 	//text parameters:
 	std::string m_text;                        //the text to render
@@ -40,6 +36,10 @@ public:
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void render(float parentAlphaMult);
+
+protected:
+	float m_renderScale; //the final scale of text
+	float m_renderW;     //the final maximum line width of the text, in pixels
 };
 
 }; //namespace dnui

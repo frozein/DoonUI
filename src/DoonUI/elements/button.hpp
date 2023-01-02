@@ -25,11 +25,6 @@ public:
 		DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 1.0f}, float outlineThickness = 0.0f, 
 		Transition base = Transition(), Transition hover = Transition(), Transition hold = Transition());
 
-	/* Call whenever the cursor position or the state of the mouse button changes, will NOT invoke any of the button callback functions, for that, a DNUIevent must be sent
-	 * @param pos the mouse's screen position, with {0, 0} denoting the center of the screen
-	 * @param pressed whether or not the main selection button is held down, used for animations
-	 */
-	static void set_mouse_state(DNvec2 pos, bool pressed);
 	/* Call whenever you change any of the buttons transitions in order to have them refresh immediately,
 	 * or they may take a while to show
 	*/
@@ -38,10 +33,7 @@ public:
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void handle_event(Event event);
 
-private:
-	inline static DNvec2 s_mousePos;   //the mouse's current screen position
-	inline static bool s_mousePressed; //whether or not the mouse button is held down
-
+protected:
 	int m_curState = 0; //0 = not hovered, 1 = hovered, 2 = held
 };
 

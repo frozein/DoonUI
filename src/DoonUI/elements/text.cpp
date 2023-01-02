@@ -1,6 +1,8 @@
 #include "text.hpp"
 
-dnui::Text::Text(Coordinate x, Coordinate y, Dimension size, std::string txt, DNUIfont* fnt, DNvec4 col, float scl, float lnW, int algn, float thick, float soft, DNvec4 outlineCol, float outlineThick, float outlineSoft)
+dnui::Text::Text(Coordinate x, Coordinate y, Dimension size, std::string txt, 
+	DNUIfont* fnt, DNvec4 col, float scl, float lnW, int algn, float thick, 
+	float soft, DNvec4 outlineCol, float outlineThick, float outlineSoft)
 {
 	m_xPos = x;
 	m_yPos = y;

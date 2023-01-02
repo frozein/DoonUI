@@ -29,6 +29,12 @@ public:
 	//deletes all child elements, do NOT delete child elements yourself
 	~Element();
 
+	/* Call whenever the cursor position or the state of the mouse button changes, will NOT invoke any of the button callback functions, for that, a DNUIevent must be sent
+	 * @param pos the mouse's screen position, with {0, 0} denoting the center of the screen
+	 * @param pressed whether or not the main selection button is held down, used for animations
+	 */
+	static void set_mouse_state(DNvec2 pos, bool pressed);
+
 	//calls update() on all child elements and updates the transition, can be overriden
 	virtual void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	//calls render() on all child elements, can be overriden
@@ -40,6 +46,9 @@ public:
 	void set_transition(Transition transition, float delay);
 
 protected:
+	inline static DNvec2 s_mousePos;   //the mouse's current screen position
+	inline static bool s_mousePressed; //whether or not the mouse button is held down
+
 	DNvec2 m_renderPos;  //the final position of the box's center, in pixels
 	DNvec2 m_renderSize; //the final size of the box, in pixels
 

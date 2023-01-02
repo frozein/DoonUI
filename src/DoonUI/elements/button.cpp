@@ -1,18 +1,15 @@
 #include "button.hpp"
 
-dnui::Button::Button(Coordinate x, Coordinate y, Dimension w, Dimension h, void (*buttonCallback)(int), int id, int tex, DNvec4 col, float cornerRad, float angle, DNvec4 outlineCol, float outlineThick, Transition base, Transition hover, Transition hold) : dnui::Box::Box(x, y, w, h, tex, col, cornerRad, angle, outlineCol, outlineThick)
+dnui::Button::Button(Coordinate x, Coordinate y, Dimension w, Dimension h, 
+	void (*buttonCallback)(int), int id, int tex, DNvec4 col, float cornerRad, 
+	float angle, DNvec4 outlineCol, float outlineThick, Transition base, 
+	Transition hover, Transition hold) : dnui::Box::Box(x, y, w, h, tex, col, cornerRad, angle, outlineCol, outlineThick)
 {
 	m_button_callback = buttonCallback;
 	m_callbackID = id;
 	m_baseTransition = base;
 	m_hoverTransition = hover;
 	m_holdTransition = hold;
-}
-
-void dnui::Button::set_mouse_state(DNvec2 pos, bool pressed)
-{
-	s_mousePos = pos;
-	s_mousePressed = pressed;
 }
 
 void dnui::Button::update_transitions()

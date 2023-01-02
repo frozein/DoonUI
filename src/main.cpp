@@ -11,6 +11,8 @@
 unsigned int windowW = 1280, windowH = 720;
 dnui::Element baseElement = dnui::Element(); //create fullscreen element to serve as the "base"
 
+float sliderVal = 5.0f;
+
 //--------------------------------------------------------------------------------------------------------------------------------//
 
 void window_size_callback(GLFWwindow* window, int width, int height)
@@ -29,7 +31,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 void button_callback(int callbackID)
 {
-	std::cout << "Button #" << callbackID << " has been pressed!" << std::endl;
+	std::cout << "Button #" << callbackID << " has been pressed!" << std::endl << "Slider Value: " << sliderVal << std::endl;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -140,6 +142,13 @@ int main()
 	                                       "DoonUI", arialFont, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 0.0f, 0, 0.65f, 0.5f, {1.0f, 0.2f, 1.0f, 1.0f}, 0.5f, 0.05f);
 
 	baseElement.m_children.push_back(fancyText);
+
+	dnui::Slider* slider = new dnui::Slider(dnui::Coordinate(dnui::Coordinate::PIXELS, 20.0f, dnui::Coordinate::CENTER_MAX), 
+	                                      dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.55f, dnui::Coordinate::CENTER_CENTER), 
+										  dnui::Dimension(dnui::Dimension::PIXELS, 50.0f), dnui::Dimension(dnui::Dimension::RELATIVE, 0.5f), 
+										  dnui::Slider::FLOAT, &sliderVal, 0.0f, 10.0f, true, {0.0f, 0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f},
+										  3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f}, 3.0f, 10.0f);
+	baseElement.m_children.push_back(slider);
 
 	//main loop:
 	//---------------------------------

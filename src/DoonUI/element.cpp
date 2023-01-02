@@ -17,6 +17,12 @@ dnui::Element::~Element()
 		delete m_children[i];
 }
 
+void dnui::Element::set_mouse_state(DNvec2 pos, bool pressed)
+{
+	s_mousePos = pos;
+	s_mousePressed = pressed;
+}
+
 void dnui::Element::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
 	calc_render_size(parentSize);
