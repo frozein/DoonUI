@@ -3,9 +3,8 @@
 #include <iostream>
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
-#include "DoonUI/element.hpp"
+#include "DoonUI/doonui.hpp"
 #include "QuickMath/quickmath.h"
-#include "DoonUI/render.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 

@@ -21,6 +21,9 @@
 				"/Tc${workspaceFolder}\\DoonUI\\render.c",
 				"/Tp${workspaceFolder}\\DoonUI\\element.cpp",
 				"/Tp${workspaceFolder}\\DoonUI\\utility.cpp",
+				"/Tp${workspaceFolder}\\DoonUI\\elements\\box.cpp",
+				"/Tp${workspaceFolder}\\DoonUI\\elements\\button.cpp",
+				"/Tp${workspaceFolder}\\DoonUI\\elements\\text.cpp",
 
 				"${workspaceFolder}\\*.cpp", //source files
 
