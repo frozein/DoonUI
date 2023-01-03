@@ -17,6 +17,8 @@ public:
 	Transition m_hoverTransition; //the transition that plays when the button is hovered
 	Transition m_holdTransition;  //the transition that plays when the button is held down
 
+	bool m_active = true; //whether or not the button is "active" and should call its callback funtion when pressed
+
 	Button() = default;
 	Button(Coordinate x, Coordinate y, Dimension w, Dimension h, 
 		void (*buttonCallback)(int) = nullptr, int callbackID = 0, 

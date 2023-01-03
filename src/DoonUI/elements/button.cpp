@@ -51,7 +51,7 @@ void dnui::Button::handle_event(Event event)
 	   s_mousePos.x >  m_renderPos.x - m_renderSize.x * 0.5f && s_mousePos.x <  m_renderPos.x + m_renderSize.x * 0.5f &&
 	   s_mousePos.y > -m_renderPos.y - m_renderSize.y * 0.5f && s_mousePos.y < -m_renderPos.y + m_renderSize.y * 0.5f)
 	{
-		if(m_button_callback != nullptr)
+		if(m_button_callback != nullptr && m_active)
 			m_button_callback(m_callbackID);
 	}
 

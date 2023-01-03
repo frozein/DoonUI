@@ -50,6 +50,11 @@ dnui::Slider::Slider(const Slider& old) : dnui::Element::Element(old.m_xPos, old
 	m_minVal = old.m_minVal;
 	m_maxVal = old.m_maxVal;
 	m_vertical = old.m_vertical;
+	m_active = old.m_active;
+
+	m_alphaMult = old.m_alphaMult;
+	m_activeTransition = old.m_activeTransition;
+	m_transition = old.m_transition;
 
 	m_base = new Box(*old.m_base);
 	m_slider = new Button(*old.m_slider);
@@ -61,7 +66,7 @@ dnui::Slider::Slider(const Slider& old) : dnui::Element::Element(old.m_xPos, old
 void dnui::Slider::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
 	check_moving();
-	if(m_moving)
+	if(m_moving && m_active)
 		update_val();
 	clamp_val();
 	set_slider_pos();
