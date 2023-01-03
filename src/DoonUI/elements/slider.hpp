@@ -36,6 +36,7 @@ public:
 		float baseOutlineThickness = 0.0f, DNvec4 sliderCol = {1.0f, 0.0f, 0.0f, 1.0f},
 		DNvec4 sliderOutlineCol = {0.0f, 0.0f, 0.0f, 1.0f}, float sliderOutlineThickness = 0.0f, float sliderCornerRad = 10.0f,
 		Transition sliderBase = Transition(), Transition sliderHover = Transition(), Transition sliderHold = Transition());
+	Slider(const Slider& old);
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 

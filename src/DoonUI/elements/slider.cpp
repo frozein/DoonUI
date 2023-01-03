@@ -43,6 +43,21 @@ dnui::Slider::Slider(Coordinate x, Coordinate y, Dimension w, Dimension h,
 	m_children.push_back(m_slider);
 }
 
+dnui::Slider::Slider(const Slider& old) : dnui::Element::Element(old.m_xPos, old.m_yPos, old.m_width, old.m_height)
+{
+	m_type = old.m_type;
+	m_val = old.m_val;
+	m_minVal = old.m_minVal;
+	m_maxVal = old.m_maxVal;
+	m_vertical = old.m_vertical;
+
+	m_base = new Box(*old.m_base);
+	m_slider = new Button(*old.m_slider);
+
+	m_children.push_back(m_base);
+	m_children.push_back(m_slider);
+}
+
 void dnui::Slider::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
 	check_moving();
