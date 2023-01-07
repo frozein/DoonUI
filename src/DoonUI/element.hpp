@@ -42,6 +42,11 @@ public:
 	//calls handle_event() on all child elements, can be overriden
 	virtual void handle_event(Event event);
 
+	//get the position of the element when rendered, in pixels. represents the position of the element's center, (0,0) represents the screen's center
+	DNvec2 get_render_pos()  { return m_renderPos;  }
+	//get the size of the element when rendered, in pixels
+	DNvec2 get_render_size() { return m_renderSize; }
+
 	//sets the current transition, will begin after delay milliseconds
 	void set_transition(Transition transition, float delay);
 
