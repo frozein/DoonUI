@@ -9,5 +9,6 @@
 #include "elements/button.hpp"
 #include "elements/text.hpp"
 #include "elements/slider.hpp"
+#include "elements/list.hpp"
 
 #endif
