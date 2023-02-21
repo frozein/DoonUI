@@ -92,13 +92,22 @@ void dnui::List::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 	//update scrolling:
 	if(m_renderSize.y > 0.0f)
 	{
-		float listHeight = 2.0f * edgePadding.y + padding.y * (m_listItems.size() / itemsPerLine);	
-		m_scrollTargetPos = fmaxf(m_scrollTargetPos, 0.0f);	
-		m_scrollTargetPos = fminf(m_scrollTargetPos, 1.0f - listHeight / m_renderSize.y);
+		float listHeight = 2.0f * edgePadding.y + padding.y * ((m_listItems.size() - 1) / itemsPerLine);	
+		
+		if(listHeight < m_renderSize.y)
+		{
+			m_scrollTargetPos = fmaxf(m_scrollTargetPos, 0.0f);	
+			m_scrollTargetPos = fminf(m_scrollTargetPos, 1.0f - listHeight / m_renderSize.y);
+		}
+		else
+		{
+			m_scrollTargetPos = fmaxf(m_scrollTargetPos, 1.0f - listHeight / m_renderSize.y);
+			m_scrollTargetPos = fminf(m_scrollTargetPos, 0.0f);
+		}
 	}
 
 	if(m_smoothScroll)
-		m_scrollPos += (m_scrollTargetPos - m_scrollPos) * powf(0.001f, dt);
+		m_scrollPos += (m_scrollTargetPos - m_scrollPos) * (1.0f - powf(0.99f, dt));
 	else
 		m_scrollPos = m_scrollTargetPos;
 
@@ -131,4 +140,9 @@ void dnui::List::handle_event(Event event)
 {
 	if(event.type == Event::SCROLL && is_hovered())
 		m_scrollTargetPos += event.scroll.dir;
+
+	for(int i = 0; i < m_listItems.size(); i++)
+		m_listItems[i].second->handle_event(event);
+
+	dnui::Element::handle_event(event);
 }

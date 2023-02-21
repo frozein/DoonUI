@@ -54,8 +54,8 @@ protected:
 	inline static DNvec2 s_mousePos;   //the mouse's current screen position
 	inline static bool s_mousePressed; //whether or not the mouse button is held down
 
-	DNvec2 m_renderPos;  //the final position of the box's center, in pixels
-	DNvec2 m_renderSize; //the final size of the box, in pixels
+	DNvec2 m_renderPos  = {0.0f, 0.0f}; //the final position of the box's center, in pixels
+	DNvec2 m_renderSize = {0.0f, 0.0f}; //the final size of the box, in pixels
 
 	//calculates the render size and stores it in m_renderSize
 	void calc_render_size(DNvec2 parentSize);
