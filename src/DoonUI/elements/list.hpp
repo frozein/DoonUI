@@ -16,13 +16,14 @@ public:
 	Dimension m_xEdgePadding = Dimension(dnui::Dimension::PIXELS, 0.0f); //the amount of space between the edge of the list and the elements on its ends on the x-axis
 	Dimension m_yEdgePadding = Dimension(dnui::Dimension::PIXELS, 0.0f); //the amount of space between the edge of the list and the elements on its ends on the y-axis
 
-	int m_itemsPerLine = -1; //the number of items per line, or -1 to determine this automatically
-	bool m_vertical = true;  //whether or not the list scrolls vertically
+	int m_itemsPerLine = -1;     //the number of items per line, or -1 to determine this automatically
+	bool m_smoothScroll = false; //whether or not to smooth out the scrolling of the list
 
 	List() = default;
 	List(Coordinate x, Coordinate y, Dimension w, Dimension h, 
 	     Dimension xPadding, Dimension yPadding, Dimension xEdgePadding, Dimension yEdgePadding,
-		 int itemsPerLine = -1, bool vertical = true);
+		 int itemsPerLine = -1, bool smoothScroll = false);
+	~List();
 
 	/* Adds an item to the list with an identifier. NOTE: added items are automatically freed when the list's destructor is called, do NOT free them yourself
 	 * @param item the ui element to be added
@@ -44,7 +45,10 @@ public:
 	void handle_event(Event event);
 
 protected:
-	std::vector<std::pair<int, Element*>> m_listItems;
+	std::vector<std::pair<int, Element*>> m_listItems; //all of the list's items
+
+	float m_scrollPos = 0.0f;       //the current scroll position
+	float m_scrollTargetPos = 0.0f; //the target scroll position
 };
 
 }; //namespace dnui

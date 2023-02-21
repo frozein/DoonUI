@@ -47,9 +47,7 @@ void dnui::Button::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 
 void dnui::Button::handle_event(Event event)
 {
-	if(event.type == Event::MOUSE_RELEASE &&
-	   s_mousePos.x >  m_renderPos.x - m_renderSize.x * 0.5f && s_mousePos.x <  m_renderPos.x + m_renderSize.x * 0.5f &&
-	   s_mousePos.y > -m_renderPos.y - m_renderSize.y * 0.5f && s_mousePos.y < -m_renderPos.y + m_renderSize.y * 0.5f)
+	if(event.type == Event::MOUSE_RELEASE && is_hovered())
 	{
 		if(m_button_callback != nullptr && m_active)
 			m_button_callback(m_callbackID);

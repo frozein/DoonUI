@@ -75,10 +75,15 @@ struct Event
 	enum Type
 	{
 		NONE,
-		MOUSE_RELEASE
+		MOUSE_RELEASE,
+		SCROLL
 	} type = NONE;
 
-	//data here
+	//data:
+	union
+	{
+		struct { float dir; } scroll;
+	};
 
 	Event() = default;
 	Event(Event::Type type);

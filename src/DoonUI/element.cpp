@@ -74,3 +74,9 @@ void dnui::Element::calc_render_pos(DNvec2 parentPos, DNvec2 parentSize)
 {
 	m_renderPos = {m_xPos.calc_render_pos(parentPos.x, parentSize.x, m_renderSize.x), m_yPos.calc_render_pos(parentPos.y, parentSize.y, m_renderSize.y)};
 }
+
+bool dnui::Element::is_hovered()
+{
+	return (s_mousePos.x >  m_renderPos.x - m_renderSize.x * 0.5f) && (s_mousePos.x <  m_renderPos.x + m_renderSize.x * 0.5f) &&
+	       (s_mousePos.y > -m_renderPos.y - m_renderSize.y * 0.5f) && (s_mousePos.y < -m_renderPos.y + m_renderSize.y * 0.5f);
+}

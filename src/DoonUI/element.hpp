@@ -61,6 +61,9 @@ protected:
 	void calc_render_size(DNvec2 parentSize);
 	//calculates the render position and stores it in m_renderPos
 	void calc_render_pos(DNvec2 parentPos, DNvec2 parentSize);
+
+	//returns whether the mouse is hovering over the element
+	bool is_hovered();
 };
 
 }; //namespace dnui

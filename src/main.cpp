@@ -3,6 +3,7 @@
 #include <iostream>
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
+#include <cmath>
 #include "DoonUI/doonui.hpp"
 #include "QuickMath/quickmath.h"
 
@@ -10,6 +11,8 @@
 
 unsigned int windowW = 1280, windowH = 720;
 dnui::Element baseElement = dnui::Element(); //create fullscreen element to serve as the "base"
+
+float deltaTime = 0.0f;
 
 float sliderVal = 5.0f;
 
@@ -27,6 +30,13 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 		baseElement.handle_event(dnui::Event(dnui::Event::MOUSE_RELEASE));
+}
+
+void scroll_callback(GLFWwindow* window, double offsetX, double offsetY)
+{
+	dnui::Event scrollEvent = dnui::Event(dnui::Event::SCROLL);
+	scrollEvent.scroll.dir = (float)offsetY * deltaTime / 20.0f;
+	baseElement.handle_event(scrollEvent);
 }
 
 void button_callback(int callbackID)
@@ -70,6 +80,7 @@ int main()
 	glViewport(0, 0, windowW, windowH);
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
@@ -159,7 +170,7 @@ int main()
 		//calculate dt:
 		//---------------------------------
 		float newTime = glfwGetTime() * 1000.0f;
-		float deltaTime = newTime - oldTime;
+		deltaTime = newTime - oldTime;
 		oldTime = newTime;
 
 		//update mouse state:
