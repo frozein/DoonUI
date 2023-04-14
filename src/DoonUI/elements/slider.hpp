@@ -42,6 +42,11 @@ public:
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 
+	/* Whether or not the slider is currently being dragged by the user
+	 * @returns whether or not the slider is currently being dragged by the user
+	 */
+	bool is_moving();
+
 protected:
 	bool m_moving = false; //whether or now the user is currently moving the slider
 

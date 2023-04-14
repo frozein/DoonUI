@@ -10,5 +10,6 @@
 #include "elements/text.hpp"
 #include "elements/slider.hpp"
 #include "elements/list.hpp"
+#include "elements/colorselector.hpp"
 
 #endif

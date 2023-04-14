@@ -177,3 +177,8 @@ void dnui::Slider::set_slider_pos()
 	else
 		m_slider->m_xPos = newCoord;
 }
+
+bool dnui::Slider::is_moving()
+{
+	return m_moving;
+}
