@@ -20,6 +20,7 @@ dnui::Element::~Element()
 void dnui::Element::set_mouse_state(DNvec2 pos, bool pressed)
 {
 	s_mousePos = pos;
+	s_mousePressedLast = s_mousePressed;
 	s_mousePressed = pressed;
 }
 

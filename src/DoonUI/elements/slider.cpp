@@ -79,12 +79,11 @@ void dnui::Slider::check_moving()
 	if(!s_mousePressed)
 		m_moving = false;
 
-	if(s_mousePos.x >  m_renderPos.x - m_renderSize.x * 0.5f && s_mousePos.x <  m_renderPos.x + m_renderSize.x * 0.5f &&
-	   s_mousePos.y > -m_renderPos.y - m_renderSize.y * 0.5f && s_mousePos.y < -m_renderPos.y + m_renderSize.y * 0.5f &&
-	   s_mousePressed)
-	{
+	bool hovered = s_mousePos.x >  m_renderPos.x - m_renderSize.x * 0.5f && s_mousePos.x <  m_renderPos.x + m_renderSize.x * 0.5f &&
+	               s_mousePos.y > -m_renderPos.y - m_renderSize.y * 0.5f && s_mousePos.y < -m_renderPos.y + m_renderSize.y * 0.5f;
+
+	if(hovered && s_mousePressed && !s_mousePressedLast)
 		m_moving = true;
-	}
 }
 
 void dnui::Slider::clamp_val()

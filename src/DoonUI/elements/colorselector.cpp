@@ -74,27 +74,23 @@ void dnui::ColorSelector::init_texture()
 
 void dnui::ColorSelector::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
+	//CHECK IF COLOR SELECTOR IS BEING DRAGGED:
 	if(!s_mousePressed)
 		m_moving = false;
 
-	//CHECK IF COLOR SELECTOR IS BEING DRAGGED:
 	DNvec2 selectorPos  = m_selector->get_render_pos();
 	DNvec2 selectorSize = m_selector->get_render_size();
-	if(s_mousePos.x >  selectorPos.x - selectorSize.x * 0.5f && s_mousePos.x <  selectorPos.x + selectorSize.x * 0.5f &&
-	   s_mousePos.y > -selectorPos.y - selectorSize.y * 0.5f && s_mousePos.y < -selectorPos.y + selectorSize.y * 0.5f &&
-	   s_mousePressed)
-	{
+	bool hovered = s_mousePos.x >  selectorPos.x - selectorSize.x * 0.5f && s_mousePos.x <  selectorPos.x + selectorSize.x * 0.5f &&
+	               s_mousePos.y > -selectorPos.y - selectorSize.y * 0.5f && s_mousePos.y < -selectorPos.y + selectorSize.y * 0.5f;
+	
+	if(hovered && s_mousePressed && !s_mousePressedLast)
 		m_moving = true;
-	}
 
 	//SET SELECTOR POSITION:
 	if(DN_vec3_equals(*m_selectedColor, {0.0f, 0.0f, 0.0f}))
 		hsvColor.z = 0.0f;
 	else
 		hsvColor = rgb_to_hsv(*m_selectedColor);
-
-	std::cout << m_selectedColor->x << ", " << m_selectedColor->y << ", " << m_selectedColor->z << std::endl;
-	std::cout << hsvColor.x << std::endl << std::endl;
 
 	m_selectorButton->m_xPos = Coordinate(Coordinate::RELATIVE, hsvColor.x / 360.0f, Coordinate::CENTER_CENTER);
 	m_selectorButton->m_yPos = Coordinate(Coordinate::RELATIVE, hsvColor.y, Coordinate::CENTER_CENTER);
