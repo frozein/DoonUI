@@ -100,6 +100,7 @@ void dnui::ColorSelector::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 	DNvec2 hs;
 	if(m_moving && m_active) //from selector
 	{
+		selectorPos.y *= -1.0f;
 		hs = DN_vec2_div(DN_vec2_sub(s_mousePos, selectorPos), selectorSize);
 		hs.y *= -1.0f;
 		hs = DN_vec2_add(hs, {0.5f, 0.5f});
