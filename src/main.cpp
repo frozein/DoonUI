@@ -39,7 +39,7 @@ void scroll_callback(GLFWwindow* window, double offsetX, double offsetY)
 	baseElement.handle_event(scrollEvent);
 }
 
-void button_callback(int callbackID)
+void button_callback(int callbackID, void* userData)
 {
 	std::cout << "Button #" << callbackID << " has been pressed!" << std::endl << "Slider Value: " << sliderVal << std::endl;
 }
@@ -111,7 +111,7 @@ int main()
 	dnui::Button baseButton = dnui::Button(dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.5f , dnui::Coordinate::CENTER_CENTER), 
 	                                       dnui::Coordinate(dnui::Coordinate::PIXELS  , 20.0f, dnui::Coordinate::CENTER_MIN),
 	                                       dnui::Dimension(dnui::Dimension::RELATIVE, 0.1f), dnui::Dimension(dnui::Dimension::ASPECT, 1.0f),
-	                                       button_callback, 0, -1, {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, 0.0f, 
+	                                       button_callback, 0, nullptr, -1, {1.0f, 0.0f, 0.0f, 1.0f}, 20.0f, 0.0f, 
 	                                       {0.0f, 1.0f, 1.0f, 1.0f}, 5.0f,
 	                                       buttonBaseTransition, buttonHoverTransition, buttonHoldTransition);
 

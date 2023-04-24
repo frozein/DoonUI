@@ -36,8 +36,8 @@ dnui::Slider::Slider(Coordinate x, Coordinate y, Dimension w, Dimension h,
 		-1, baseCol, 0.0f, 0.0f, baseOutlineCol, baseOutlineThickness);
 	
 	m_slider = new Button(Coordinate(), Coordinate(), sliderW, sliderH,
-		nullptr, 0, -1, sliderCol, sliderCornerRad, 0.0f, sliderOutlineCol, sliderOutlineThickness, sliderBase,
-		sliderHover, sliderHold);
+		nullptr, 0, nullptr, -1, sliderCol, sliderCornerRad, 0.0f, sliderOutlineCol, 
+		sliderOutlineThickness, sliderBase, sliderHover, sliderHold);
 
 	m_children.push_back(m_base);
 	m_children.push_back(m_slider);

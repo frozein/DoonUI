@@ -1,12 +1,13 @@
 #include "button.hpp"
 
 dnui::Button::Button(Coordinate x, Coordinate y, Dimension w, Dimension h, 
-	void (*buttonCallback)(int), int id, int tex, DNvec4 col, float cornerRad, 
-	float angle, DNvec4 outlineCol, float outlineThick, Transition base, 
+	void (*buttonCallback)(int, void*), int id, void* userData, int tex, DNvec4 col, 
+	float cornerRad, float angle, DNvec4 outlineCol, float outlineThick, Transition base, 
 	Transition hover, Transition hold) : dnui::Box::Box(x, y, w, h, tex, col, cornerRad, angle, outlineCol, outlineThick)
 {
 	m_button_callback = buttonCallback;
 	m_callbackID = id;
+	m_userData = userData;
 	m_baseTransition = base;
 	m_hoverTransition = hover;
 	m_holdTransition = hold;
@@ -50,7 +51,7 @@ void dnui::Button::handle_event(Event event)
 	if(event.type == Event::MOUSE_RELEASE && is_hovered())
 	{
 		if(m_button_callback != nullptr && m_active)
-			m_button_callback(m_callbackID);
+			m_button_callback(m_callbackID, m_userData);
 	}
 
 	dnui::Element::handle_event(event);

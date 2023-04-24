@@ -10,8 +10,9 @@ namespace dnui
 class Button : public Box
 {
 public:
-	void (*m_button_callback)(int) = nullptr; //the function that gets called when the button is clicked
-	int m_callbackID = 0;                     //the unique id that gets passed to the callback function, used to differentiate buttons that have the same callback func
+	void (*m_button_callback)(int, void*) = nullptr; //the function that gets called when the button is clicked
+	int m_callbackID = 0;                            //an id that gets passed to the callback function, used to differentiate buttons that have the same callback func
+	void* m_userData = nullptr;                      //user-defined data that gets passed to the callback function
 
 	Transition m_baseTransition;  //the transition that plays when the button is neither hovered nor held down
 	Transition m_hoverTransition; //the transition that plays when the button is hovered
@@ -21,8 +22,8 @@ public:
 
 	Button() = default;
 	Button(Coordinate x, Coordinate y, Dimension w, Dimension h, 
-		void (*buttonCallback)(int) = nullptr, int callbackID = 0, 
-		int tex = -1, DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, 
+		void (*buttonCallback)(int, void*) = nullptr, int callbackID = 0, 
+		void* userData = nullptr, int tex = -1, DNvec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, 
 		float cornerRad = 0.0f, float angle = 0.0f, 
 		DNvec4 outlineColor = {0.0f, 0.0f, 0.0f, 1.0f}, float outlineThickness = 0.0f, 
 		Transition base = Transition(), Transition hover = Transition(), Transition hold = Transition());
