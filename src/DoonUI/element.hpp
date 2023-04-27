@@ -46,6 +46,8 @@ public:
 	DNvec2 get_render_pos()  { return m_renderPos;  }
 	//get the size of the element when rendered, in pixels
 	DNvec2 get_render_size() { return m_renderSize; }
+	//returns whether the mouse is hovering over the element
+	bool is_hovered();
 
 	//sets the current transition, will begin after delay milliseconds
 	void set_transition(Transition transition, float delay);
@@ -62,9 +64,6 @@ protected:
 	void calc_render_size(DNvec2 parentSize);
 	//calculates the render position and stores it in m_renderPos
 	void calc_render_pos(DNvec2 parentPos, DNvec2 parentSize);
-
-	//returns whether the mouse is hovering over the element
-	bool is_hovered();
 };
 
 }; //namespace dnui
