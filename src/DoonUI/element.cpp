@@ -22,6 +22,8 @@ void dnui::Element::set_mouse_state(DNvec2 pos, bool pressed)
 	s_mousePos = pos;
 	s_mousePressedLast = s_mousePressed;
 	s_mousePressed = pressed;
+
+	s_anyHovered = false;
 }
 
 void dnui::Element::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
@@ -31,6 +33,9 @@ void dnui::Element::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 
 	if(m_activeTransition)
 		m_activeTransition = m_transition.update(dt, this, parentSize, m_renderSize);
+
+	if(m_active && is_hovered())
+		s_anyHovered = true;
 
 	for(int i = 0; i < m_children.size(); i++)
 		m_children[i]->update(dt, m_renderPos, m_renderSize);

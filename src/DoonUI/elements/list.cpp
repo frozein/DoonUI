@@ -122,6 +122,8 @@ void dnui::List::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 		m_listItems[i].second->m_xPos = Coordinate(Coordinate::PIXELS,  xPos, Coordinate::CENTER_CENTER);
 		m_listItems[i].second->m_yPos = Coordinate(Coordinate::PIXELS, -yPos, Coordinate::CENTER_CENTER);
 
+		m_listItems[i].second->m_active = m_active;
+
 		m_listItems[i].second->update(dt, m_renderPos, m_renderSize);
 	}
 
@@ -138,7 +140,7 @@ void dnui::List::render(float parentAlphaMult)
 
 void dnui::List::handle_event(Event event)
 {
-	if(event.type == Event::SCROLL && is_hovered())
+	if(event.type == Event::SCROLL && m_active && is_hovered())
 		m_scrollTargetPos += event.scroll.dir;
 
 	for(int i = 0; i < m_listItems.size(); i++)

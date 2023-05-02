@@ -29,8 +29,6 @@ public:
 	float m_maxVal;        //the maximum value of the data
 	float m_minVal;        //the minimum value of the data
 
-	bool m_active = true; //whether or not the slider is "active" and should update the data
-
 	Slider() = default;
 	Slider(Coordinate x, Coordinate y, Dimension w, Dimension h,
 		DataType type, void* val, float minVal, float maxVal, bool vertical = false,

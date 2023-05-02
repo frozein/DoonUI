@@ -20,7 +20,7 @@ void dnui::Button::update_transitions()
 
 void dnui::Button::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 {
-	if(is_hovered())
+	if(m_active && is_hovered())
 	{
 		if(s_mousePressed)
 		{

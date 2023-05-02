@@ -19,8 +19,6 @@ public:
 
 	DNvec3* m_selectedColor = nullptr; //the pointer to the color that is selected, modified by this class
 
-	bool m_active = true; //whether or not the selector is "active" and should update the data
-
 	ColorSelector() = default;
 	ColorSelector(Coordinate x, Coordinate y, Dimension w, Dimension h,
 		DNvec3* selectedColor, DNvec4 backgroundCol = {1.0f, 1.0f, 1.0f, 1.0f}, float backgroundCornerRad = 0.0f,

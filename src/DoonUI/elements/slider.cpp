@@ -71,6 +71,9 @@ void dnui::Slider::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 	clamp_val();
 	set_slider_pos();
 
+	m_base->m_active = m_active;
+	m_slider->m_active = m_active;
+
 	dnui::Element::update(dt, parentPos, parentSize);
 }
 

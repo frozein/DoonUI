@@ -115,6 +115,12 @@ void dnui::ColorSelector::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 	hsvColor.x = hs.x;
 	hsvColor.y = hs.y;
 
+	//SET ACTIVE:
+	m_background->m_active     = m_active;
+	m_selector->m_active       = m_active;
+	m_selectorButton->m_active = m_active;
+	m_valueSlider->m_active    = m_active;
+
 	//SET SLIDER POSITION:
 	Element::update(dt, parentPos, parentSize);
 

@@ -24,6 +24,8 @@ public:
 	Dimension m_height;
 	float m_alphaMult = 1.0f;
 
+	bool m_active = true;
+
 	Element() = default;
 	Element(Coordinate x, Coordinate y, Dimension w, Dimension h);
 	//deletes all child elements, do NOT delete child elements yourself
@@ -34,6 +36,8 @@ public:
 	 * @param pressed whether or not the main selection button is held down, used for animations
 	 */
 	static void set_mouse_state(DNvec2 pos, bool pressed);
+	//returns whether or not any element is hovered
+	static bool any_hovered() { return s_anyHovered; }
 
 	//calls update() on all child elements and updates the transition, can be overriden
 	virtual void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
@@ -56,6 +60,8 @@ protected:
 	inline static DNvec2 s_mousePos;       //the mouse's current screen position
 	inline static bool s_mousePressed;     //whether or not the mouse button is held down
 	inline static bool s_mousePressedLast; //whether or not the mouse button was held down last frame
+
+	inline static bool s_anyHovered; //whether any ui element is hovered, useful for determining if game is in focus
 
 	DNvec2 m_renderPos  = {0.0f, 0.0f}; //the final position of the box's center, in pixels
 	DNvec2 m_renderSize = {0.0f, 0.0f}; //the final size of the box, in pixels
