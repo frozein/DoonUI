@@ -13,12 +13,13 @@ dnui::TextBox::TextBox(Coordinate x, Coordinate y, Dimension w, Dimension h,
 	m_textOutlineColor = txtOutlineCol;
 	m_textOutlineThickness = txtOutlineThick;
 	m_textPadding = txtPad;
-	m_cursorPos = txt.length();
+	m_cursorTransition = Transition(250.0f, Transition::EXPONENTIAL);
 	m_cursorAlpha = cursorCol.a;
 
 	m_background = new Box(Coordinate(), Coordinate(), Dimension(), Dimension(), -1,
 	                       bckgroundCol, bckgroundCornerRad, 0.0f, bckgroundOutlineCol,
 						   bckgroundOutlineThick);
+	
 	m_cursor = new Box(Coordinate(), Coordinate(), Dimension(dnui::Dimension::PIXELS, CURSOR_SIZE), 
 	                   Dimension(dnui::Dimension::SPACE, 2.0f * txtPad), -1, cursorCol);
 	m_cursor->m_color.a = 0.0f;
@@ -35,10 +36,20 @@ dnui::TextBox::~TextBox()
 	delete m_highlight;
 }
 
-void dnui::TextBox::set_control_key_state(bool shiftHeld, bool ctrllHeld)
+void dnui::TextBox::set_control_key_state(bool shiftHeld, bool ctrlHeld)
 {
 	s_shiftHeld = shiftHeld;
-	s_ctrlHeld = ctrllHeld;
+	s_ctrlHeld = ctrlHeld;
+}
+
+std::string dnui::TextBox::get_highlighted()
+{
+	if(m_highlightLen == 0)
+		return m_text;
+	else if(m_highlightLen < 0)
+		return m_text.substr(m_cursorPos + m_highlightLen, -m_highlightLen);
+	else
+		return m_text.substr(m_cursorPos, m_highlightLen);
 }
 
 void dnui::TextBox::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
@@ -74,15 +85,26 @@ void dnui::TextBox::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 		m_highlightLen = m_orgCursorPos - m_cursorPos;
 	}
 
-	//set cursor and highlight position:
-	m_cursor->m_xPos.type = dnui::Coordinate::PIXELS;
-	m_cursor->m_xPos.pixelPos =  get_cursor_render_pos(m_cursorPos);
+	//set cursor position:
+	if(m_lastCursorPos != m_cursorPos)
+	{
+		m_cursorTransition.set_target_x(Coordinate(Coordinate::PIXELS, get_cursor_render_pos(m_cursorPos), Coordinate::CENTER_CENTER));
+		m_cursor->set_transition(m_cursorTransition, 0.0f);
+		m_time = 0.0f;
 
+		m_lastCursorPos = m_cursorPos;
+	}
+
+	//highlight position:
 	m_highlight->m_xPos.type = dnui::Coordinate::PIXELS;
 	m_highlight->m_width.type = dnui::Dimension::PIXELS;
 
-	float startPos = get_cursor_render_pos(m_cursorPos);
-	float endPos = get_cursor_render_pos(m_cursorPos + m_highlightLen);
+	float startPos = m_cursor->get_render_pos().x - m_renderPos.x;
+	float endPos;
+	if(m_highlightLen == 0)
+		endPos = startPos;
+	else
+		endPos = get_cursor_render_pos(m_cursorPos + m_highlightLen);
 
 	m_highlight->m_xPos.pixelPos = (startPos + endPos) * 0.5f;
 	m_highlight->m_width.pixelSize = fabsf(endPos - startPos);
@@ -98,6 +120,10 @@ void dnui::TextBox::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 	m_highlight->update(dt, m_renderPos, m_renderSize);
 
 	Element::update(dt, parentPos, parentSize);
+
+	//if cursor position has not yet been initially set, set it
+	if(m_cursor->m_xPos.type == Coordinate::RELATIVE)
+		m_cursor->m_xPos = Coordinate(Coordinate::PIXELS, get_cursor_render_pos(m_cursorPos), Coordinate::CENTER_CENTER);
 }
 
 void dnui::TextBox::render(float parentAlphaMult)
@@ -123,7 +149,6 @@ void dnui::TextBox::handle_event(Event event)
 			m_hasFocus = false;
 
 		m_highlighting = false;
-
 		break;
 	}
 	case Event::ARROW_KEY_PRESS:
@@ -170,7 +195,6 @@ void dnui::TextBox::handle_event(Event event)
 			m_highlightLen = 0;
 		}
 
-		m_time = 0.0f;
 		break;
 	}
 	case Event::DELETE_KEY_PRESS:
@@ -251,6 +275,9 @@ void dnui::TextBox::handle_event(Event event)
 
 float dnui::TextBox::get_cursor_render_pos(int cursorPos)
 {
+	if(m_text.length() == 0)
+		return -m_renderSize.x * 0.5f + m_textPadding;
+
 	float result;
 
 	if(cursorPos == 0)
@@ -270,6 +297,9 @@ float dnui::TextBox::get_cursor_render_pos(int cursorPos)
 
 int dnui::TextBox::get_cursor_pos(float cursorRenderPos)
 {
+	if(m_text.length() == 0)
+		return 0;
+
 	cursorRenderPos -= m_renderPos.x - m_renderSize.x * 0.5f + m_textPadding;
 	cursorRenderPos = fmaxf(cursorRenderPos, 0.0f);
 

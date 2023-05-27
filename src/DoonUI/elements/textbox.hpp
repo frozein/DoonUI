@@ -40,7 +40,10 @@ public:
 	 * @param shiftHeld whether or not the shfit key is currently held
 	 * @param ctrlHeld whether or not the ctrl key is currently held
 	 */
-	static void set_control_key_state(bool shiftHeld, bool ctrllHeld);
+	static void set_control_key_state(bool shiftHeld, bool ctrlHeld);
+
+	//returns the highlighted portion of the text, or the entire string if none is highlighted
+	std::string get_highlighted();
 
 	void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
 	void render(float parentAlphaMult);
@@ -59,11 +62,13 @@ private:
 	inline static bool s_ctrlHeld;  //whether the ctrl key is currently held
 
 	const float CURSOR_SIZE = 7.5f; //the rendered size of the cursor, in pixels
+	Transition m_cursorTransition; //the transition used to animate the cursor's position
 	//returns the rendered position of the cursor, given its position in the text
 	float get_cursor_render_pos(int cursorPos);
 	//returns the position of the cursor in the text, given its rendered position
 	int get_cursor_pos(float cursorRenderPos); 
 
+	int m_lastCursorPos = 0;     //the cursor position last frame, used to determine if an animation update is needed
 	int m_orgCursorPos = 0;      //original cursor position when highlighting started
 	bool m_highlighting = false; //whether the user us currently dragging their mouse to highlight next
 

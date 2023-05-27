@@ -29,7 +29,8 @@
 			"iterator": "c",
 			"streambuf": "c",
 			"xlocale": "c",
-			"xiosbase": "cpp"
+			"xiosbase": "cpp",
+			"cstdlib": "cpp"
 		}
 	}
 }
