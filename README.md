@@ -5,7 +5,8 @@ Some of the notable features include:
 * SDF-based text rendering
 * Many options for element positioning, allowing for layouts to play well with multiple window sizes
 * A simple yet robust animation system
-* Relative ease to add new elements types (only buttons and text are currently implemented)
+* Relative ease to add new element types
+* Currently implemented: boxes, buttons, text, sliders, lists, editable text boxes, color selectors
 
 # Preview
 ![picture alt](https://github.com/frozein/DoonUI/blob/master/assets/screenshot.png)
