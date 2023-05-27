@@ -195,7 +195,7 @@ int main()
 
 	dnui::TextBox* textBox = new dnui::TextBox(dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.6f , dnui::Coordinate::CENTER_CENTER),
 	                                           dnui::Coordinate(dnui::Coordinate::PIXELS, 20.0f, dnui::Coordinate::CENTER_MAX), 
-											   dnui::Dimension(dnui::Dimension::RELATIVE, 0.5f), dnui::Dimension(dnui::Dimension::ASPECT, 0.15f), "test", arialFont, {1.0f, 1.0f, 1.0f, 1.0f},
+											   dnui::Dimension(dnui::Dimension::RELATIVE, 0.5f), dnui::Dimension(dnui::Dimension::ASPECT, 0.15f), "edit me", arialFont, {1.0f, 1.0f, 1.0f, 1.0f},
 											   0.7f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 10.0f, {0.5f, 0.5f, 0.5f, 1.0f}, 0.0f);
 	baseElement.m_children.push_back(textBox);
 
