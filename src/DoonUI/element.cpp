@@ -24,6 +24,7 @@ void dnui::Element::set_mouse_state(DNvec2 pos, bool pressed)
 	s_mousePressed = pressed;
 
 	s_anyHovered = false;
+	s_anyInputFocus = false;
 }
 
 void dnui::Element::update(float dt, DNvec2 parentPos, DNvec2 parentSize)

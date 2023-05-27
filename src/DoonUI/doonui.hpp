@@ -11,5 +11,6 @@
 #include "elements/slider.hpp"
 #include "elements/list.hpp"
 #include "elements/colorselector.hpp"
+#include "elements/textbox.hpp"
 
 #endif

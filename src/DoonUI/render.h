@@ -63,6 +63,14 @@ DNUIfont* DNUI_load_font(const char* path, int size);
  */
 void DNUI_free_font(DNUIfont* font);
 
+/* Calculates the size of a single-line string when rendered to the screen
+ * @param text the string to calculate
+ * @param font the handle to the font to use
+ * @param scale the scale of the text, a scale of 1.0 means that the font will be rendered at its actual resolution
+ * @param charPositions an array populated with the start and end x position of each char when rendered ({start, end}), in pixels. Ignored if NULL
+ * @returns the size of the string when rendered, in pixels
+ */
+DNvec2 DNUI_line_render_size(const char* text, DNUIfont* font, float scale, DNvec2* charPositions);
 /* Calculates the size of a string when rendered to the screen
  * @param text the string to calculate
  * @param font the handle to the font to use

@@ -39,6 +39,36 @@ void scroll_callback(GLFWwindow* window, double offsetX, double offsetY)
 	baseElement.handle_event(scrollEvent);
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if(action != GLFW_PRESS && action != GLFW_REPEAT)
+		return;
+
+	if(key == GLFW_KEY_RIGHT || key == GLFW_KEY_LEFT || key == GLFW_KEY_DOWN || key == GLFW_KEY_UP)
+	{
+		dnui::Event arrowEvent = dnui::Event(dnui::Event::ARROW_KEY_PRESS);
+		arrowEvent.arrowKey.dir = key - GLFW_KEY_RIGHT;
+		baseElement.handle_event(arrowEvent);
+	}
+
+	if(key == GLFW_KEY_BACKSPACE || key == GLFW_KEY_DELETE)
+	{
+		dnui::Event deleteEvent = dnui::Event(dnui::Event::DELETE_KEY_PRESS);
+		deleteEvent.del.backspace = key == GLFW_KEY_BACKSPACE;
+		baseElement.handle_event(deleteEvent);
+	}
+}
+
+void character_callback(GLFWwindow* window, unsigned int character)
+{
+	if(character > 128) //non-ASCII not supported
+		return;
+
+	dnui::Event charEvent = dnui::Event(dnui::Event::CHARACTER);
+	charEvent.character.character = character;
+	baseElement.handle_event(charEvent);
+}
+
 void button_callback(int callbackID, void* userData)
 {
 	std::cout << "Button #" << callbackID << " has been pressed!" << std::endl << "Slider Value: " << sliderVal << std::endl;
@@ -81,6 +111,8 @@ int main()
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetCharCallback(window, character_callback);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
@@ -161,6 +193,12 @@ int main()
 										  3.0f, {1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 1.0f, 1.0f}, 3.0f, 10.0f);
 	baseElement.m_children.push_back(slider);
 
+	dnui::TextBox* textBox = new dnui::TextBox(dnui::Coordinate(dnui::Coordinate::RELATIVE, 0.6f , dnui::Coordinate::CENTER_CENTER),
+	                                           dnui::Coordinate(dnui::Coordinate::PIXELS, 20.0f, dnui::Coordinate::CENTER_MAX), 
+											   dnui::Dimension(dnui::Dimension::RELATIVE, 0.5f), dnui::Dimension(dnui::Dimension::ASPECT, 0.15f), "test", arialFont, {1.0f, 1.0f, 1.0f, 1.0f},
+											   0.7f, {0.0f, 0.0f, 0.0f, 1.0f}, 0.5f, 10.0f, {0.5f, 0.5f, 0.5f, 1.0f}, 0.0f);
+	baseElement.m_children.push_back(textBox);
+
 	//main loop:
 	//---------------------------------
 	float oldTime = glfwGetTime() * 1000.0f;
@@ -178,6 +216,8 @@ int main()
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 		dnui::Button::set_mouse_state({(float)mouseX - windowW * 0.5f, (float)mouseY - windowH * 0.5f}, glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+		dnui::TextBox::set_control_key_state(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT  ) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT  ) == GLFW_PRESS, 
+		                                     glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS);
 
 		//clear rendering buffer:
 		//---------------------------------

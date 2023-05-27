@@ -27,6 +27,7 @@
 				"/Tp${workspaceFolder}\\DoonUI\\elements\\slider.cpp",
 				"/Tp${workspaceFolder}\\DoonUI\\elements\\list.cpp",
 				"/Tp${workspaceFolder}\\DoonUI\\elements\\colorselector.cpp",
+				"/Tp${workspaceFolder}\\DoonUI\\elements\\textbox.cpp",
 
 				"${workspaceFolder}\\*.cpp", //source files
 

@@ -76,13 +76,19 @@ struct Event
 	{
 		NONE,
 		MOUSE_RELEASE,
-		SCROLL
+		SCROLL,
+		ARROW_KEY_PRESS,
+		DELETE_KEY_PRESS, //for backspace or delete
+		CHARACTER
 	} type = NONE;
 
 	//data:
 	union
 	{
 		struct { float dir; } scroll;
+		struct { int dir; /*0 = right, 1 = left, 2 = down, 3 = up*/ } arrowKey;
+		struct { unsigned int character; /*unicode character*/ } character;
+		struct { bool backspace; /*whether it was backspace or delete*/ } del;
 	};
 
 	Event() = default;

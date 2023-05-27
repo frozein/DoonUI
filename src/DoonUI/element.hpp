@@ -38,6 +38,8 @@ public:
 	static void set_mouse_state(DNvec2 pos, bool pressed);
 	//returns whether or not any element is hovered
 	static bool any_hovered() { return s_anyHovered; }
+	//returns whether or not any element has keyboard input focus
+	static bool any_input_focus() { return s_anyInputFocus; }
 
 	//calls update() on all child elements and updates the transition, can be overriden
 	virtual void update(float dt, DNvec2 parentPos, DNvec2 parentSize);
@@ -61,7 +63,8 @@ protected:
 	inline static bool s_mousePressed;     //whether or not the mouse button is held down
 	inline static bool s_mousePressedLast; //whether or not the mouse button was held down last frame
 
-	inline static bool s_anyHovered; //whether any ui element is hovered, useful for determining if game is in focus
+	inline static bool s_anyHovered;    //whether any ui element is hovered, useful for determining if game is in focus
+	inline static bool s_anyInputFocus; //whether or not any ui element has input focus
 
 	DNvec2 m_renderPos  = {0.0f, 0.0f}; //the final position of the box's center, in pixels
 	DNvec2 m_renderSize = {0.0f, 0.0f}; //the final size of the box, in pixels

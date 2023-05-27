@@ -220,26 +220,35 @@ void DNUI_free_font(DNUIfont* font)
 	free(font);
 }
 
-float _DNUI_line_render_size(const char* text, DNUIfont* font, float scale)
+DNvec2 DNUI_line_render_size(const char* text, DNUIfont* font, float scale, DNvec2* charPositions)
 {
 	float w = 0.0;
 
+	int i = 0;
 	for(char* c = (char*)text; *c != '\0'; c++)
 	{
+		if(charPositions)
+		{
+			charPositions[i].x = w * scale;
+			charPositions[i].y = (w + font->glyphInfo[*c].advance) * scale;
+		}
+
 		if(*(c + 1) == '\0')
 			w += font->glyphInfo[*c].bmpL + font->glyphInfo[*c].bmpW;
 		else
 			w += font->glyphInfo[*c].advance;
+
+		i++;
 	}
 
-	return w * scale;
+	return (DNvec2){w * scale, font->atlasH * scale};
 }
 
 DNvec2 DNUI_string_render_size(const char* text, DNUIfont* font, float scale, float maxW)
 {
 	DNvec2 res;
 	if(maxW <= 0.0f)
-		return (DNvec2){_DNUI_line_render_size(text, font, scale), font->atlasH * scale};
+		return DNUI_line_render_size(text, font, scale, NULL);
 	else
 		res.x = maxW;
 
@@ -386,9 +395,9 @@ void DNUI_draw_string(const char* text, DNUIfont* font, DNvec2 pos, float scale,
 
 			float x = pos.x;
 			if(align == 1)
-				x += size.x - _DNUI_line_render_size(line, font, scale);
+				x += size.x - DNUI_line_render_size(line, font, scale, NULL).x;
 			else if(align == 2)
-				x += (size.x - _DNUI_line_render_size(line, font, scale)) * 0.5f;
+				x += (size.x - DNUI_line_render_size(line, font, scale, NULL).x) * 0.5f;
 
 			_DNUI_draw_string_line(line, font, (DNvec2){x, pos.y - font->atlasH * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
 
@@ -413,9 +422,9 @@ void DNUI_draw_string(const char* text, DNUIfont* font, DNvec2 pos, float scale,
 
 		float x = pos.x;
 		if(align == 1)
-			x += size.x - _DNUI_line_render_size(line, font, scale);
+			x += size.x - DNUI_line_render_size(line, font, scale, NULL).x;
 		else if(align == 2)
-			x += (size.x - _DNUI_line_render_size(line, font, scale)) * 0.5f;
+			x += (size.x - DNUI_line_render_size(line, font, scale, NULL).x) * 0.5f;
 
 		_DNUI_draw_string_line(line, font, (DNvec2){x, pos.y - font->atlasH * scale * numLines}, scale, color, thickness, softness, outlineColor, outlineThickness, outlineSoftness);
 
