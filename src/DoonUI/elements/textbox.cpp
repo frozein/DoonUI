@@ -129,6 +129,10 @@ void dnui::TextBox::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 
 	Element::update(dt, parentPos, parentSize);
 
+	//set input focus:
+	if(m_hasFocus)
+		s_anyInputFocus = true;
+
 	//if cursor position has not yet been initially set, set it
 	if(m_cursor->m_xPos.type == Coordinate::RELATIVE)
 		m_cursor->m_xPos = Coordinate(Coordinate::PIXELS, get_cursor_render_pos(m_cursorPos), Coordinate::CENTER_CENTER);

@@ -26,6 +26,10 @@ public:
 	float m_textOutlineThickness = 1.0f;                  //the thickness at which the text's outline begins
 	float m_textPadding = 10.0f;                          //space between edge of background and start of text, in pixels
 
+	//info:
+	int m_cursorPos = 0;     //the index of the character the cursor is on
+	int m_highlightLen = 0;  //the number of characters highlighted
+
 	TextBox() = default;
 	TextBox(Coordinate x, Coordinate y, Dimension w, Dimension h,
 		    std::string text, DNUIfont* font, DNvec4 textColor = {1.0f, 1.0f, 1.0f, 1.0f}, 
@@ -51,8 +55,6 @@ public:
 
 protected:
 	bool m_hasFocus = false; //whether or not the textbox has keyboard focus
-	int m_cursorPos = 0;     //the index of the character the cursor is on
-	int m_highlightLen = 0;  //the number of characters highlighted
 
 	DNvec2 m_textSize;   //the rendered size of the text at 1.0 scale
 	float m_renderScale; //the final scale of text
