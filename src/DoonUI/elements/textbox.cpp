@@ -71,13 +71,21 @@ void dnui::TextBox::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 		m_renderScale = expectedTextSize.x / m_textSize.x;
 
 	//handle user input:
-	if(s_mousePressed && !s_mousePressedLast && is_hovered())
+	if(s_mousePressed && !s_mousePressedLast)
 	{
-		m_highlighting = true;
-		m_hasFocus = true;
-		m_orgCursorPos = get_cursor_pos(s_mousePos.x);
-		m_time = 0.0f;
+		if(is_hovered())
+		{
+			m_highlighting = true;
+			m_hasFocus = true;
+			m_orgCursorPos = get_cursor_pos(s_mousePos.x);
+			m_time = 0.0f;
+		}
+		else
+			m_hasFocus = false;
 	}
+
+	if(!s_mousePressed && s_mousePressedLast)
+		m_highlighting = false;
 
 	if(m_highlighting)
 	{
@@ -143,14 +151,6 @@ void dnui::TextBox::handle_event(Event event)
 {
 	switch(event.type)
 	{
-	case Event::MOUSE_RELEASE:
-	{
-		if(!m_highlighting && !is_hovered())
-			m_hasFocus = false;
-
-		m_highlighting = false;
-		break;
-	}
 	case Event::ARROW_KEY_PRESS:
 	{
 		if(!m_hasFocus)
