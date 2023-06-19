@@ -95,10 +95,7 @@ void dnui::List::update(float dt, DNvec2 parentPos, DNvec2 parentSize)
 		float listHeight = 2.0f * edgePadding.y + padding.y * ((m_listItems.size() - 1) / itemsPerLine);	
 		
 		if(listHeight < m_renderSize.y)
-		{
-			m_scrollTargetPos = fmaxf(m_scrollTargetPos, 0.0f);	
-			m_scrollTargetPos = fminf(m_scrollTargetPos, 1.0f - listHeight / m_renderSize.y);
-		}
+			m_scrollTargetPos = 0.0f;
 		else
 		{
 			m_scrollTargetPos = fmaxf(m_scrollTargetPos, 1.0f - listHeight / m_renderSize.y);

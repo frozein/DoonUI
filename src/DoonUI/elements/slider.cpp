@@ -147,7 +147,7 @@ void dnui::Slider::update_val()
 		*(float*)m_val = newVal;
 		break;
 	case INT:
-		*(int*)m_val = (int)(newVal);	
+		*(int*)m_val = (int)(roundf(newVal));	
 		break;
 	case DOUBLE:
 		*(double*)m_val = (double)(newVal);
