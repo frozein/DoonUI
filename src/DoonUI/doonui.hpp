@@ -12,5 +12,6 @@
 #include "elements/list.hpp"
 #include "elements/colorselector.hpp"
 #include "elements/textbox.hpp"
+#include "elements/checkbox.hpp"
 
 #endif
